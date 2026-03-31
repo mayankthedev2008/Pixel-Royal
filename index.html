@@ -738,12 +738,87 @@ function newGame(){
 
 function mkMap(){
   const obs=[];
-  for(let i=0;i<105;i++){
-    let w=TILE*(2+Math.floor(Math.random()*3)),h=TILE*(1+Math.floor(Math.random()*2));
-    if(Math.random()>.5){let t=w;w=h;h=t;}
-    const x=100+Math.random()*(MAP-200-w),y=100+Math.random()*(MAP-200-h);
-    if(dst(x+w/2,y+h/2,MAP/2,MAP/2)>310)obs.push({x,y,w,h,id:i,hp:3,maxHp:3});
+  let id=0;
+  const safe=320; // clear radius around map center (player spawn)
+
+  function addObs(x,y,w,h){
+    // Never overlap center spawn area
+    if(dst(x+w/2,y+h/2,MAP/2,MAP/2)<safe)return;
+    // Never go out of bounds
+    if(x<80||y<80||x+w>MAP-80||y+h>MAP-80)return;
+    // Never overlap existing obstacles
+    for(const o of obs){
+      if(x<o.x+o.w+12&&x+w>o.x-12&&y<o.y+o.h+12&&y+h>o.y-12)return;
+    }
+    obs.push({x,y,w,h,id:id++,hp:3,maxHp:3});
   }
+
+  // ── 1. BUILDINGS (L-shape, U-shape, solid blocks) ────────────────
+  const buildingCount=18;
+  for(let i=0;i<buildingCount;i++){
+    const bx=200+Math.random()*(MAP-400);
+    const by=200+Math.random()*(MAP-400);
+    const type=Math.floor(Math.random()*4);
+
+    if(type===0){
+      // Solid building
+      const w=TILE*(3+Math.floor(Math.random()*3));
+      const h=TILE*(3+Math.floor(Math.random()*3));
+      addObs(bx,by,w,h);
+
+    }else if(type===1){
+      // L-shape building (2 rects)
+      const w1=TILE*(3+Math.floor(Math.random()*2)),h1=TILE*(1+Math.floor(Math.random()*2));
+      const w2=TILE*(1+Math.floor(Math.random()*2)),h2=TILE*(2+Math.floor(Math.random()*2));
+      addObs(bx,by,w1,h1);
+      addObs(bx,by+h1,w2,h2);
+
+    }else if(type===2){
+      // U-shape (3 walls around open courtyard)
+      const uw=TILE*(4+Math.floor(Math.random()*2)),uh=TILE;
+      addObs(bx,by,uw,uh);               // top wall
+      addObs(bx,by+TILE*2,uw,uh);         // bottom wall
+      addObs(bx,by+TILE,TILE,TILE);        // left wall
+
+    }else{
+      // Plus / cross shape
+      const sz=TILE*2;
+      addObs(bx+sz,by,sz,sz*3);
+      addObs(bx,by+sz,sz*3,sz);
+    }
+  }
+
+  // ── 2. COVER ROCKS / BARRICADES (small scattered) ────────────────
+  for(let i=0;i<40;i++){
+    const bx=150+Math.random()*(MAP-300);
+    const by=150+Math.random()*(MAP-300);
+    const w=TILE*(1+Math.floor(Math.random()*2));
+    const h=TILE;
+    // Rotate randomly
+    if(Math.random()>.5)addObs(bx,by,w,h);
+    else addObs(bx,by,h,w);
+  }
+
+  // ── 3. CORRIDOR WALLS (long horizontal/vertical strips) ──────────
+  const corridorCount=12;
+  for(let i=0;i<corridorCount;i++){
+    const bx=200+Math.random()*(MAP-400);
+    const by=200+Math.random()*(MAP-400);
+    const isH=Math.random()>.5;
+    const len=TILE*(4+Math.floor(Math.random()*5));
+    if(isH)addObs(bx,by,len,TILE);
+    else addObs(bx,by,TILE,len);
+  }
+
+  // ── 4. CORNER BUNKERS (near map edges) ───────────────────────────
+  const corners=[
+    [160,160],[MAP-360,160],[160,MAP-360],[MAP-360,MAP-360]
+  ];
+  for(const [cx,cy] of corners){
+    addObs(cx,cy,TILE*3,TILE);
+    addObs(cx,cy+TILE,TILE,TILE*2);
+  }
+
   return obs;
 }
 function mkPl(x,y){
@@ -859,14 +934,6 @@ function nukeExplode(x,y,owner){
     if(d<radius){
       const dmg=Math.round(90*(1-d/radius));
       hurt(e,dmg,owner);
-    }
-  }
-  // Destroy nearby walls
-  for(const o of G.obs){
-    if(o.hp<=0)continue;
-    const cx=o.x+o.w/2,cy=o.y+o.h/2;
-    if(dst(cx,cy,x,y)<radius*.7){
-      damageWall(o,2);
     }
   }
 }
@@ -1245,6 +1312,30 @@ function updBoss(b,dt,now){
 }
 
 // ════════════════════════════════════════
+//  SEGMENT vs RECT — proper raycast (fixes bullet tunneling)
+// ════════════════════════════════════════
+function segHitsRect(x1,y1,x2,y2,rx,ry,rw,rh){
+  // If either endpoint is inside rect — definitely hit
+  if(x1>rx&&x1<rx+rw&&y1>ry&&y1<ry+rh)return true;
+  if(x2>rx&&x2<rx+rw&&y2>ry&&y2<ry+rh)return true;
+  // Liang-Barsky clipping algorithm
+  const dx=x2-x1,dy=y2-y1;
+  const p=[-dx,dx,-dy,dy];
+  const q=[x1-rx,rx+rw-x1,y1-ry,ry+rh-y1];
+  let t0=0,t1=1;
+  for(let i=0;i<4;i++){
+    if(p[i]===0){if(q[i]<0)return false;}
+    else{
+      const t=q[i]/p[i];
+      if(p[i]<0){if(t>t0)t0=t;}
+      else{if(t<t1)t1=t;}
+    }
+    if(t0>t1)return false;
+  }
+  return true;
+}
+
+// ════════════════════════════════════════
 //  UPDATE LOOP
 // ════════════════════════════════════════
 function update(now){
@@ -1405,7 +1496,10 @@ function update(now){
   }
   for(const bl of G.bullets){
     if(bl.dead)continue;
-    const dx=bl.vx*dt,dy=bl.vy*dt;bl.x+=dx;bl.y+=dy;bl.trav+=Math.sqrt(dx*dx+dy*dy);
+    const dx=bl.vx*dt,dy=bl.vy*dt;
+    const stepDist=Math.sqrt(dx*dx+dy*dy);
+    const prevX=bl.x,prevY=bl.y;
+    bl.x+=dx;bl.y+=dy;bl.trav+=stepDist;
     if(bl.trail){bl.trail.push({x:bl.x,y:bl.y});if(bl.trail.length>12)bl.trail.shift();}
     if(bl.trav>bl.rng||bl.x<0||bl.x>MAP||bl.y<0||bl.y>MAP){
       if(bl.isNuke)nukeExplode(bl.x,bl.y,bl.owner);
@@ -1414,10 +1508,12 @@ function update(now){
     let hit=0;
     for(const o of G.obs){
       if(G.destroyedWalls.has(o.id))continue;
-      if(bl.x>o.x&&bl.x<o.x+o.w&&bl.y>o.y&&bl.y<o.y+o.h){
+      // Segment vs AABB raycast (clips segment prevX,prevY -> bl.x,bl.y against expanded rect)
+      const ex=o.x-bl.r,ey=o.y-bl.r,ew=o.w+bl.r*2,eh=o.h+bl.r*2;
+      if(segHitsRect(prevX,prevY,bl.x,bl.y,ex,ey,ew,eh)){
+        bl.x=prevX;bl.y=prevY;// snap back to before wall
         if(bl.isNuke){nukeExplode(bl.x,bl.y,bl.owner);}
-        else if(bl.isLaser){damageWall(o,1);}
-        else{spark(bl.x,bl.y,'#aaa',4,80,.18);}
+        else{spark(bl.x,bl.y,'#aaa',5,90,.2);}
         bl.dead=1;hit=1;break;
       }
     }
@@ -1606,24 +1702,58 @@ function buildMapCache(q){
   ox.strokeStyle='#ff3344';ox.lineWidth=5;ox.strokeRect(1,1,MAP-2,MAP-2);
   for(const o of G.obs){
     if(G.destroyedWalls&&G.destroyedWalls.has(o.id)){
-      // Rubble
       ox.fillStyle='rgba(40,55,40,.55)';ox.fillRect(o.x,o.y,o.w,o.h);
       ox.fillStyle='rgba(60,80,60,.3)';
       for(let ri=0;ri<6;ri++){ox.fillRect(o.x+Math.random()*o.w,o.y+Math.random()*o.h,4+Math.random()*6,3+Math.random()*4);}
       continue;
     }
-    const dmgRatio=o.hp/o.maxHp;
-    if(q==='high'){ox.fillStyle='rgba(0,0,0,.3)';ox.fillRect(o.x+4,o.y+5,o.w,o.h);}
-    // Tint walls red when damaged
-    const wallColor=dmgRatio>0.6?'#1c2c1c':dmgRatio>0.3?'#2c1c1c':'#3c1010';
-    ox.fillStyle=wallColor;ox.fillRect(o.x,o.y,o.w,o.h);
-    const borderColor=dmgRatio>0.6?'#2c4a2c':dmgRatio>0.3?'#4a2c2c':'#6a1818';
-    ox.strokeStyle=borderColor;ox.lineWidth=2;ox.strokeRect(o.x,o.y,o.w,o.h);
-    if(q!=='low'){ox.fillStyle='rgba(255,255,255,.04)';ox.fillRect(o.x+1,o.y+1,o.w-2,3);ox.fillRect(o.x+1,o.y+1,3,o.h-2);}
-    // Crack lines when damaged
-    if(dmgRatio<0.7&&q!=='low'){
-      ox.strokeStyle=`rgba(255,100,100,${(1-dmgRatio)*.5})`;ox.lineWidth=1;
-      ox.beginPath();ox.moveTo(o.x+o.w*.2,o.y);ox.lineTo(o.x+o.w*.4,o.y+o.h*.6);ox.lineTo(o.x+o.w*.6,o.y+o.h*.3);ox.stroke();
+    const isBig=o.w>=TILE*3&&o.h>=TILE*3;
+    const isLong=(o.w>=TILE*4||o.h>=TILE*4)&&(o.w<=TILE||o.h<=TILE);
+    // Shadow
+    if(q==='high'){
+      ox.fillStyle='rgba(0,0,0,.38)';
+      ox.fillRect(o.x+5,o.y+7,o.w,o.h);
+    }
+    // Fill color by type
+    if(isBig)ox.fillStyle='#182818';
+    else if(isLong)ox.fillStyle='#1a2a1a';
+    else ox.fillStyle='#1e301a';
+    ox.fillRect(o.x,o.y,o.w,o.h);
+    // Border
+    ox.strokeStyle=isBig?'#28422a':'#2e4030';
+    ox.lineWidth=2;ox.strokeRect(o.x,o.y,o.w,o.h);
+    if(q!=='low'){
+      // Bevel highlight
+      ox.fillStyle='rgba(255,255,255,.055)';
+      ox.fillRect(o.x+1,o.y+1,o.w-2,3);
+      ox.fillRect(o.x+1,o.y+1,3,o.h-2);
+      // Dark bottom-right edge
+      ox.fillStyle='rgba(0,0,0,.25)';
+      ox.fillRect(o.x+1,o.y+o.h-3,o.w-2,2);
+      ox.fillRect(o.x+o.w-3,o.y+1,2,o.h-2);
+      // Windows on big buildings
+      if(isBig&&o.w>TILE*2&&o.h>TILE*2){
+        const wc=Math.max(1,Math.floor(o.w/TILE)-1);
+        const hc=Math.max(1,Math.floor(o.h/TILE)-1);
+        for(let wi=1;wi<=wc;wi++){
+          for(let hi=1;hi<=hc;hi++){
+            ox.fillStyle='rgba(255,220,80,.14)';
+            ox.fillRect(o.x+wi*TILE-7,o.y+hi*TILE-7,10,10);
+            ox.strokeStyle='rgba(255,220,80,.1)';
+            ox.lineWidth=1;
+            ox.strokeRect(o.x+wi*TILE-7,o.y+hi*TILE-7,10,10);
+          }
+        }
+      }
+      // Stripes on long corridor walls
+      if(isLong){
+        ox.strokeStyle='rgba(255,255,255,.03)';ox.lineWidth=1;
+        if(o.w>o.h){
+          for(let si=TILE;si<o.w;si+=TILE){ox.beginPath();ox.moveTo(o.x+si,o.y);ox.lineTo(o.x+si,o.y+o.h);ox.stroke();}
+        }else{
+          for(let si=TILE;si<o.h;si+=TILE){ox.beginPath();ox.moveTo(o.x,o.y+si);ox.lineTo(o.x+o.w,o.y+si);ox.stroke();}
+        }
+      }
     }
   }
   mapCache=oc;mapCacheQ=q;
