@@ -106,7 +106,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 #vcanvas{position:fixed;inset:0;pointer-events:none;z-index:32;display:none}
 #lvlup-toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);pointer-events:none;z-index:40;
   text-align:center;opacity:0;transition:opacity .2s}
-#lvlup-toast .lt{font-size:22px;color:#cc88ff;text-shadow:0 0 15px #8844ff;letter-spacing:4px;font-weight:bold}
+#lvlup-toast .lt{font-size:22px;color:#cc88ff;text-shadow:0 0 15px #8844ff;letter-spacing:3px;font-weight:bold}
 #lvlup-toast .ls{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:3px;margin-top:3px}
 #coin-toast{position:fixed;top:30%;left:50%;transform:translateX(-50%);pointer-events:none;z-index:39;
   font-size:16px;color:#f0e040;text-shadow:0 0 10px #f0c000;letter-spacing:3px;opacity:0;transition:opacity .15s}
@@ -209,12 +209,12 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
   padding:max(20px,env(safe-area-inset-top)) 20px max(90px,calc(env(safe-area-inset-bottom) + 70px)) 20px;
   justify-content:center;align-items:center;gap:0;}
 .scl{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none}
-.game-title{font-size:clamp(28px,7vw,80px);color:#f0e040;letter-spacing:clamp(3px,1.5vw,8px);
+.game-title{font-size:clamp(22px,6vw,70px);color:#f0e040;letter-spacing:clamp(2px,1.2vw,7px);
   text-shadow:0 0 10px #f0e040,0 0 30px #f0c000,0 0 70px #f08000,4px 4px 0 #7a6000;
-  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:4px;margin-top:12px;text-align:center}
-.game-sub{font-size:clamp(8px,1.8vw,14px);color:#4dff88;letter-spacing:clamp(2px,1vw,6px);margin-bottom:18px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
-.menu-btns{display:flex;flex-direction:column;gap:13px;width:min(280px,85vw)}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:3px;margin-top:8px;text-align:center}
+.game-sub{font-size:clamp(7px,1.5vw,12px);color:#4dff88;letter-spacing:clamp(1px,0.8vw,5px);margin-bottom:12px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
+.menu-btns{display:flex;flex-direction:column;gap:8px;width:min(260px,82vw)}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tips{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center;padding:0 20px}
 .tip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 12px;font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1.5px}
 .ss-footer{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:24px;align-items:center;z-index:101;
@@ -224,8 +224,8 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 
 /* Buttons */
 .btn{pointer-events:all;background:linear-gradient(135deg,#f0e040,#d08010);color:#050508;border:none;
-  border-radius:10px;padding:16px 40px;font-size:18px;font-family:'Courier New',monospace;
-  letter-spacing:4px;font-weight:bold;cursor:pointer;text-transform:uppercase;
+  border-radius:10px;padding:13px 30px;font-size:16px;font-family:'Courier New',monospace;
+  letter-spacing:3px;font-weight:bold;cursor:pointer;text-transform:uppercase;
   box-shadow:0 0 20px rgba(240,224,64,.3),0 4px 0 #7a6000;
   transition:transform .1s,box-shadow .1s,filter .1s;animation:bp 2s ease-in-out infinite;
   position:relative;overflow:hidden;width:100%}
@@ -234,7 +234,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 .btn:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(240,224,64,.55),0 6px 0 #7a6000;filter:brightness(1.08)}
 .btn:active{transform:translateY(2px);box-shadow:0 0 10px rgba(240,224,64,.2),0 1px 0 #7a6000;filter:brightness(.95)}
 .btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);
-  box-shadow:none;animation:none;font-size:15px;padding:13px 24px;letter-spacing:3px}
+  box-shadow:none;animation:none;font-size:13px;padding:10px 18px;letter-spacing:2px}
 .btn-sec::after{display:none}
 .btn-sec:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
 
@@ -2833,6 +2833,9 @@ checkDaily();
 if('ontouchstart' in window || navigator.maxTouchPoints > 0){
   const ct = document.getElementById('controls-tab');
   if(ct) ct.style.display = 'none';
+  // Show joystick size on mobile
+  const jr = document.getElementById('joy-size-row');
+  if(jr) jr.style.display = 'flex';
 } else {
   // Hide joystick size on desktop/laptop
   const jr = document.getElementById('joy-size-row');
