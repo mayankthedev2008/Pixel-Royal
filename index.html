@@ -2,28 +2,77 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>PIXEL ROYALE</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:#050508;overflow:hidden;font-family:'Courier New',monospace;touch-action:none;user-select:none}
-canvas{display:block;position:fixed;top:0;left:0}
+html,body{width:100%;height:100%;height:100dvh;overflow:hidden;}
+body{background:#050508;overflow:hidden;font-family:'Courier New',monospace;touch-action:none;user-select:none;
+  /* Safe area insets for notch/home bar */
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+canvas{display:block;position:fixed;top:0;left:0;}
+
+/* ── ROTATE SCREEN OVERLAY ── */
+#rotate-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:9999;
+  background:#050508;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;
+}
+#rotate-overlay .rot-icon{
+  font-size:72px;
+  animation:rotatePhone 1.5s ease-in-out infinite;
+}
+#rotate-overlay .rot-text{
+  font-size:16px;color:#f0e040;letter-spacing:4px;text-transform:uppercase;text-align:center;
+  text-shadow:0 0 10px #f0e040;
+}
+#rotate-overlay .rot-sub{
+  font-size:11px;color:rgba(255,255,255,.4);letter-spacing:2px;text-align:center;
+}
+@keyframes rotatePhone{
+  0%{transform:rotate(0deg);}
+  40%{transform:rotate(90deg);}
+  60%{transform:rotate(90deg);}
+  100%{transform:rotate(0deg);}
+}
 
 /* ── HUD ── */
 #hud{position:fixed;top:0;left:0;width:100%;pointer-events:none;z-index:20;display:none}
-#hud-top{display:flex;justify-content:center;gap:12px;padding:12px;flex-wrap:wrap}
+#hud-top{display:flex;justify-content:center;gap:12px;padding:12px;padding-top:max(12px,env(safe-area-inset-top));flex-wrap:wrap}
 .hpill{background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);
   border-radius:22px;padding:7px 18px;color:#fff;font-size:13px;letter-spacing:1.5px;
   text-transform:uppercase;display:flex;align-items:center;gap:7px}
 .hpill .v{color:#f0e040;font-weight:bold;font-size:17px;min-width:28px;text-align:center;transition:transform .1s}
 #tp .v{color:#ff5555}
+
+/* ── HP Bar — BGMI style center bottom ── */
+#hp-center{
+  position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  pointer-events:none;z-index:22;width:clamp(260px,38vw,480px);
+}
+#hp-wrap{display:flex;flex-direction:column;gap:5px;width:100%}
+#hp-top-row{display:flex;justify-content:space-between;align-items:center}
+#hp-lbl{color:rgba(255,255,255,.5);font-size:11px;letter-spacing:3px;text-transform:uppercase}
+#hp-n{color:#fff;font-size:15px;font-weight:bold;letter-spacing:1px;text-shadow:0 0 8px rgba(80,255,120,.4)}
+#hp-bg{height:18px;background:rgba(0,0,0,.55);border-radius:10px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);box-shadow:0 0 12px rgba(0,0,0,.6);width:100%}
+#hp-bar{height:100%;width:100%;border-radius:10px;transition:width .12s linear,background .25s;
+  box-shadow:0 0 8px rgba(80,255,120,.3)}
+#hp-regen{color:rgba(80,255,120,.85);font-size:10px;letter-spacing:2px;opacity:0;transition:opacity .4s;text-align:center}
+
+/* ── XP bar — stays bottom-left as before ── */
 #hud-btm{position:fixed;bottom:0;left:0;width:100%;padding:0 18px 18px;pointer-events:none;
   display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
-#hp-wrap{display:flex;flex-direction:column;gap:4px;min-width:200px}
-#hp-lbl{color:rgba(255,255,255,.45);font-size:10px;letter-spacing:2px}
-#hp-bg{height:13px;background:rgba(255,255,255,.07);border-radius:7px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
-#hp-bar{height:100%;width:100%;border-radius:7px;transition:width .12s linear,background .25s}
-#hp-n{color:rgba(255,255,255,.55);font-size:12px;letter-spacing:1px}
 #xp-wrap{display:flex;flex-direction:column;gap:3px}
 #xp-lbl{color:rgba(255,255,255,.35);font-size:9px;letter-spacing:2px}
 #xp-bg{width:200px;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
@@ -43,8 +92,6 @@ canvas{display:block;position:fixed;top:0;left:0}
 #minimap canvas{border-radius:8px;border:1px solid rgba(255,255,255,.18);
   box-shadow:0 0 12px rgba(0,0,0,.7),0 0 4px rgba(80,255,160,.12);display:block}
 #mm-label{color:rgba(255,255,255,.3);font-size:8px;letter-spacing:2px;text-align:center;margin-top:3px}
-/* ── Regen indicator ── */
-#hp-regen{color:rgba(80,255,120,.75);font-size:9px;letter-spacing:1px;margin-top:1px;opacity:0;transition:opacity .4s}
 
 /* ── Overlays ── */
 #combo{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:30;text-align:center;opacity:0}
@@ -202,14 +249,20 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 .go-btns{display:flex;flex-direction:column;gap:10px;width:260px}
 
 /* Mobile */
-#ml{position:fixed;bottom:0;left:0;width:50%;height:230px;z-index:15;display:none}
-#mr{position:fixed;bottom:0;right:0;width:50%;height:230px;z-index:15;display:none}
-#jb{position:absolute;bottom:46px;left:55px;width:108px;height:108px;
+#ml{position:fixed;bottom:0;left:0;width:50%;height:260px;z-index:15;display:none}
+#mr{position:fixed;bottom:0;right:0;width:50%;height:260px;z-index:15;display:none}
+#jb{position:absolute;bottom:60px;left:55px;width:108px;height:108px;
   border:2px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(255,255,255,.04);
   transition:width .2s,height .2s,left .2s,bottom .2s}
 #jt{position:absolute;width:44px;height:44px;
   background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.6),rgba(255,255,255,.22));
   border:2px solid rgba(255,255,255,.46);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+/* Right aim joystick */
+#rjb{position:absolute;bottom:60px;right:55px;border:2px solid rgba(255,80,80,.3);border-radius:50%;
+  background:rgba(255,80,80,.06);transition:width .2s,height .2s,right .2s,bottom .2s}
+#rjt{position:absolute;width:44px;height:44px;
+  background:radial-gradient(circle at 30% 30%,rgba(255,120,120,.6),rgba(255,80,80,.25));
+  border:2px solid rgba(255,100,100,.6);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
 .fh{position:absolute;bottom:52px;right:46px;width:68px;height:68px;border-radius:50%;
   border:2px solid rgba(255,80,80,.28);background:rgba(255,80,80,.07);
   display:flex;align-items:center;justify-content:center;color:rgba(255,120,120,.4);font-size:18px;pointer-events:none}
@@ -227,7 +280,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 @keyframes nukeWarning{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.4;transform:translateX(-50%) scale(1.08)}}
 @keyframes laserPulse{0%,100%{box-shadow:0 0 20px rgba(255,50,50,.8)}50%{box-shadow:0 0 50px rgba(255,50,50,1),0 0 80px rgba(255,100,0,.6)}}
 /* Power-up HUD bar */
-#powerup-bar{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:22;pointer-events:none}
+#powerup-bar{position:fixed;bottom:max(56px,calc(env(safe-area-inset-bottom) + 40px));left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:22;pointer-events:none}
 .pu-slot{width:52px;height:52px;border-radius:10px;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;position:relative;transition:all .15s;backdrop-filter:blur(6px)}
 .pu-slot.active{border-color:#f0e040;box-shadow:0 0 15px rgba(240,224,64,.5);background:rgba(240,224,64,.12)}
 .pu-slot.ready{border-color:#44ffaa;box-shadow:0 0 12px rgba(68,255,170,.4);animation:none}
@@ -241,11 +294,18 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 #nuke-flash{position:fixed;inset:0;background:radial-gradient(circle,#fff 0%,#ffaa00 40%,transparent 70%);pointer-events:none;z-index:45;opacity:0;transition:opacity .05s}
 /* Black hole overlay */
 #bh-overlay{position:fixed;inset:0;pointer-events:none;z-index:23;opacity:0;transition:opacity .3s;background:radial-gradient(circle at var(--bx,50%) var(--by,50%),rgba(60,0,120,.0) 0%,rgba(60,0,120,.0) 10%,rgba(0,0,0,.5) 60%,rgba(0,0,0,.0) 100%)}
+/* ── Rotate Screen Overlay — defined at top of CSS ── */
 </style>
-</head>
 <body>
 <canvas id="c"></canvas>
 <canvas id="vcanvas"></canvas>
+
+<!-- Rotate Screen Overlay -->
+<div id="rotate-overlay">
+  <div class="rot-icon">📱</div>
+  <div class="rot-text">ROTATE YOUR DEVICE</div>
+  <div class="rot-sub">This game requires landscape mode</div>
+</div>
 
 <!-- HUD -->
 <div id="hud">
@@ -260,18 +320,23 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
   </div>
   <div id="hud-btm">
     <div>
-      <div id="hp-wrap">
-        <div id="hp-lbl">HEALTH</div>
-        <div id="hp-bg"><div id="hp-bar"></div></div>
-        <div id="hp-n">100 HP</div>
-        <div id="hp-regen">▲ REGENERATING</div>
-      </div>
       <div id="xp-wrap" style="margin-top:5px">
         <div id="xp-lbl">XP TO NEXT LEVEL</div>
         <div id="xp-bg"><div id="xp-bar" style="width:0%"></div></div>
       </div>
     </div>
     <div id="wbox"><div class="wn" id="wn">PISTOL</div><div class="ws" id="ws">STANDARD</div></div>
+  </div>
+  <!-- HP Bar — BGMI style center -->
+  <div id="hp-center">
+    <div id="hp-wrap">
+      <div id="hp-top-row">
+        <div id="hp-lbl">❤ HEALTH</div>
+        <div id="hp-n">100 HP</div>
+      </div>
+      <div id="hp-bg"><div id="hp-bar"></div></div>
+      <div id="hp-regen">▲ REGENERATING</div>
+    </div>
   </div>
 </div>
 
@@ -393,13 +458,13 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
         <div class="slabel">Screen Shake</div>
         <div class="sval"><button class="stoggle on" id="toggle-shake"></button></div>
       </div>
-      <div class="srow">
-        <div class="slabel">Auto Fire<small>Fires automatically while moving</small></div>
-        <div class="sval"><button class="stoggle" id="toggle-autofire"></button></div>
-      </div>
     </div>
     <!-- Controls -->
     <div class="tab-panel" id="tab-controls">
+      <div class="srow">
+        <div class="slabel">Joystick Size<small>Mobile only</small></div>
+        <div class="sval"><input type="range" min="80" max="200" value="108" id="joy-size"><span id="joy-size-v" style="color:#f0e040;font-size:11px;width:28px">108</span></div>
+      </div>
       <div class="srow">
         <div class="slabel">Move Up<small>Current: <span id="key-up-lbl">W</span></small></div>
         <div class="sval"><button class="pbtn" id="remap-up" style="padding:6px 14px;font-size:11px">REMAP</button></div>
@@ -419,10 +484,6 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
       <div class="srow">
         <div class="slabel">Mouse Sensitivity</div>
         <div class="sval"><input type="range" min="20" max="200" value="100" id="mouse-sens"><span id="mouse-sens-v" style="color:#f0e040;font-size:11px;width:28px">100</span></div>
-      </div>
-      <div class="srow">
-        <div class="slabel">Joystick Size<small>Mobile only</small></div>
-        <div class="sval"><input type="range" min="60" max="160" value="108" id="joy-size"><span id="joy-size-v" style="color:#f0e040;font-size:11px;width:32px">108</span></div>
       </div>
     </div>
   </div>
@@ -459,7 +520,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 
 <!-- Mobile -->
 <div id="ml"><div id="jb"><div id="jt"></div></div></div>
-<div id="mr"><div class="fh">🔥</div></div>
+<div id="mr"><div id="rjb"><div id="rjt"></div></div></div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -468,8 +529,23 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 const C=document.getElementById('c'),X=C.getContext('2d');
 const VC=document.getElementById('vcanvas'),VX=VC.getContext('2d');
 let W=0,H=0;
-const resize=()=>{W=C.width=VC.width=window.innerWidth;H=C.height=VC.height=window.innerHeight;};
-resize();window.addEventListener('resize',resize);
+function getVW(){return window.visualViewport?window.visualViewport.width:window.innerWidth;}
+function getVH(){return window.visualViewport?window.visualViewport.height:window.innerHeight;}
+const resize=()=>{
+  W=C.width=VC.width=getVW();
+  H=C.height=VC.height=getVH();
+  // Reposition canvas to account for visualViewport offset (Chrome address bar scroll)
+  if(window.visualViewport){
+    C.style.left=VC.style.left=window.visualViewport.offsetLeft+'px';
+    C.style.top=VC.style.top=window.visualViewport.offsetTop+'px';
+  }
+};
+resize();
+window.addEventListener('resize',resize);
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',resize);
+  window.visualViewport.addEventListener('scroll',resize);
+}
 
 // ════════════════════════════════════════
 //  SAVE / PERSISTENCE
@@ -486,7 +562,7 @@ function defaultSave(){
     ownedWpnSkins:['default'],
     settings:{
       volMaster:80,volMusic:50,volSfx:80,muted:false,
-      quality:'medium',particles:true,shake:true,autofire:false,
+      quality:'medium',particles:true,shake:true,
       keyUp:'w',keyDown:'s',keyLeft:'a',keyRight:'d',
       mouseSens:100,joySize:108,
     },
@@ -833,7 +909,7 @@ function spawnBot(id){
     t++;
   }while(t<60&&(dst(x,y,G.pl.x,G.pl.y)<460||obsAt(x-12,y-12,24,24)));
   const wk=Object.keys(GUNS);
-  G.bots.push({x,y,hp:100,mhp:100,spd:118+Math.random()*55,wpn:wk[id%3],lf:0,angle:0,dead:0,r:12,
+  G.bots.push({x,y,hp:100,mhp:100,spd:118+Math.random()*55,wpn:'pistol',lf:0,angle:0,dead:0,r:12,
     color:`hsl(${id*33+12},70%,54%)`,isP:0,id,
     state:'roam',target:null,rT:0,rX:0,rY:0,react:200+Math.random()*440,wand:Math.random()*700,sX:0,sY:0,sT:0,
     // Stuck detection
@@ -1434,12 +1510,12 @@ function update(now){
     if(MOB){
       if(JY.on){mx=JY.dx;my=JY.dy;}
       if(RT.on){p.angle=Math.atan2(RT.y+G.cam.y-p.y,RT.x+G.cam.x-p.x);}
-      // Mobile autofire: fire while joystick is held
-      if(SAVE.settings.autofire&&JY.on){const g=GUNS[p.wpn];if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}}
+      // Mobile autofire: always fire while joystick is held
+      if(JY.on){const g=GUNS[p.wpn];if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}}
     }else{
       if(IN.l)mx-=1;if(IN.r)mx+=1;if(IN.u)my-=1;if(IN.d)my+=1;
       p.angle=Math.atan2(IN.my+G.cam.y-p.y,IN.mx+G.cam.x-p.x);
-      const shouldFire=IN.fire||(SAVE.settings.autofire&&(IN.l||IN.r||IN.u||IN.d||IN.fire));
+      const shouldFire=IN.fire||(IN.l||IN.r||IN.u||IN.d);
       if(shouldFire){const g=GUNS[p.wpn];if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}}
     }
     const l=Math.sqrt(mx*mx+my*my);if(l>0){mx/=l;my/=l;}
@@ -2172,7 +2248,6 @@ function applySettings(){
   });
   toggleClass('toggle-particles',SAVE.settings.particles);
   toggleClass('toggle-shake',SAVE.settings.shake);
-  toggleClass('toggle-autofire',SAVE.settings.autofire);
   // Controls
   document.getElementById('key-up-lbl').textContent=SAVE.settings.keyUp.toUpperCase();
   document.getElementById('key-down-lbl').textContent=SAVE.settings.keyDown.toUpperCase();
@@ -2193,6 +2268,14 @@ function applyJoySize(){
   const sz=SAVE.settings.joySize;
   const jb=document.getElementById('jb');
   if(jb){jb.style.width=sz+'px';jb.style.height=sz+'px';}
+  const rjb=document.getElementById('rjb');
+  if(rjb){rjb.style.width=sz+'px';rjb.style.height=sz+'px';}
+  // Scale thumb size proportionally
+  const thumbSz=Math.round(sz*0.4);
+  const jt=document.getElementById('jt');
+  if(jt){jt.style.width=thumbSz+'px';jt.style.height=thumbSz+'px';}
+  const rjt=document.getElementById('rjt');
+  if(rjt){rjt.style.width=thumbSz+'px';rjt.style.height=thumbSz+'px';}
 }
 
 // Slider events
@@ -2218,7 +2301,6 @@ document.querySelectorAll('.qpill').forEach(btn=>{
 });
 document.getElementById('toggle-particles').addEventListener('click',()=>{SAVE.settings.particles=!SAVE.settings.particles;toggleClass('toggle-particles',SAVE.settings.particles);saveSave();});
 document.getElementById('toggle-shake').addEventListener('click',()=>{SAVE.settings.shake=!SAVE.settings.shake;toggleClass('toggle-shake',SAVE.settings.shake);saveSave();});
-document.getElementById('toggle-autofire').addEventListener('click',()=>{SAVE.settings.autofire=!SAVE.settings.autofire;toggleClass('toggle-autofire',SAVE.settings.autofire);saveSave();});
 document.getElementById('mouse-sens').addEventListener('input',e=>{SAVE.settings.mouseSens=+e.target.value;document.getElementById('mouse-sens-v').textContent=e.target.value;saveSave();});
 document.getElementById('joy-size').addEventListener('input',e=>{SAVE.settings.joySize=+e.target.value;document.getElementById('joy-size-v').textContent=e.target.value;applyJoySize();saveSave();});
 
@@ -2384,6 +2466,8 @@ function initMob(){
   }
   document.body.appendChild(puMob);
   applyJoySize();
+
+  // ── LEFT joystick (movement) ─────────────────────────────────────
   const ml=document.getElementById('ml');
   ml.addEventListener('touchstart',e=>{
     e.preventDefault();if(AC&&AC.state==='suspended')AC.resume();
@@ -2401,10 +2485,52 @@ function initMob(){
     e.preventDefault();JY.on=0;JY.dx=0;JY.dy=0;
     document.getElementById('jt').style.transform='translate(-50%,-50%)';
   },{passive:false});
+
+  // ── RIGHT joystick (360° aim + fire) ────────────────────────────
   const mr=document.getElementById('mr');
-  mr.addEventListener('touchstart',e=>{e.preventDefault();RT.on=1;RT.x=e.touches[0].clientX;RT.y=e.touches[0].clientY;tryShootPlayer();},{passive:false});
-  mr.addEventListener('touchmove',e=>{e.preventDefault();RT.x=e.touches[0].clientX;RT.y=e.touches[0].clientY;tryShootPlayer();},{passive:false});
-  mr.addEventListener('touchend',e=>{e.preventDefault();RT.on=0;},{passive:false});
+  const rjb=document.getElementById('rjb');
+  let RJ={on:0,sx:0,sy:0};
+
+  mr.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    if(AC&&AC.state==='suspended')AC.resume();
+    RJ.on=1;
+    // Anchor joystick to touch start position
+    const rect=mr.getBoundingClientRect();
+    RJ.sx=e.touches[0].clientX;RJ.sy=e.touches[0].clientY;
+    const lx=RJ.sx-rect.left,ly=RJ.sy-rect.top;
+    const sz=SAVE.settings.joySize;
+    rjb.style.left=(lx-sz/2)+'px';rjb.style.top=(ly-sz/2)+'px';
+    rjb.style.bottom='auto';rjb.style.right='auto';
+    document.getElementById('rjt').style.transform='translate(-50%,-50%)';
+    RT.on=1;
+  },{passive:false});
+
+  mr.addEventListener('touchmove',e=>{
+    e.preventDefault();if(!RJ.on)return;
+    let dx=e.touches[0].clientX-RJ.sx,dy=e.touches[0].clientY-RJ.sy;
+    const sz=SAVE.settings.joySize/2;
+    const l=Math.sqrt(dx*dx+dy*dy);
+    // Only aim if dragged enough (avoids accidental micro rotation)
+    if(l>8){
+      const cdx=dx/l,cdy=dy/l;
+      if(G.pl&&!G.pl.dead)G.pl.angle=Math.atan2(cdy,cdx);
+    }
+    // Clamp thumb
+    const cx=Math.min(sz,Math.max(-sz,dx));
+    const cy=Math.min(sz,Math.max(-sz,dy));
+    document.getElementById('rjt').style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;
+    // Fire while joystick is active
+    tryShootPlayer();
+  },{passive:false});
+
+  mr.addEventListener('touchend',e=>{
+    e.preventDefault();RJ.on=0;RT.on=0;
+    document.getElementById('rjt').style.transform='translate(-50%,-50%)';
+    // Reset rjb position
+    const sz=SAVE.settings.joySize;
+    rjb.style.left='auto';rjb.style.right='55px';rjb.style.bottom='60px';rjb.style.top='auto';
+  },{passive:false});
 }
 
 // ════════════════════════════════════════
@@ -2459,6 +2585,28 @@ document.querySelectorAll('.btn,.pbtn').forEach(btn=>{
     btn.appendChild(r);setTimeout(()=>r.remove(),400);
   });
 });
+
+// ════════════════════════════════════════
+//  ROTATE SCREEN DETECTION
+// ════════════════════════════════════════
+function checkOrientation(){
+  const overlay=document.getElementById('rotate-overlay');
+  // Only enforce on touch devices (mobile/tablet)
+  const isTouch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  if(!isTouch){overlay.style.display='none';return;}
+  const isPortrait=window.innerHeight>window.innerWidth;
+  if(isPortrait){
+    overlay.style.display='flex';
+    if(PAUSED===false&&G.pl&&!G.over)pauseGame();
+  }else{
+    overlay.style.display='none';
+    // Auto-resume if game was running
+    if(PAUSED&&G.pl&&!G.over)resumeGame();
+  }
+}
+window.addEventListener('resize',checkOrientation);
+window.addEventListener('orientationchange',()=>setTimeout(checkOrientation,120));
+checkOrientation();
 
 // ════════════════════════════════════════
 //  BOOT
