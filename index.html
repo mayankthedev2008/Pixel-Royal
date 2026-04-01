@@ -209,12 +209,12 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
   padding:max(20px,env(safe-area-inset-top)) 20px max(90px,calc(env(safe-area-inset-bottom) + 70px)) 20px;
   justify-content:center;align-items:center;gap:0;}
 .scl{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none}
-.game-title{font-size:clamp(22px,6vw,70px);color:#f0e040;letter-spacing:clamp(2px,1.2vw,7px);
+.game-title{font-size:clamp(18px,5vw,56px);color:#f0e040;letter-spacing:clamp(2px,1vw,6px);
   text-shadow:0 0 10px #f0e040,0 0 30px #f0c000,0 0 70px #f08000,4px 4px 0 #7a6000;
-  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:3px;margin-top:8px;text-align:center}
-.game-sub{font-size:clamp(7px,1.5vw,12px);color:#4dff88;letter-spacing:clamp(1px,0.8vw,5px);margin-bottom:12px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
-.menu-btns{display:flex;flex-direction:column;gap:8px;width:min(260px,82vw)}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:2px;margin-top:6px;text-align:center}
+.game-sub{font-size:clamp(6px,1.3vw,11px);color:#4dff88;letter-spacing:clamp(1px,0.6vw,4px);margin-bottom:10px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
+.menu-btns{display:flex;flex-direction:column;gap:7px;width:min(240px,80vw)}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .tips{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center;padding:0 20px}
 .tip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 12px;font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1.5px}
 .ss-footer{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:24px;align-items:center;z-index:101;
@@ -467,13 +467,13 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
         <div class="slabel">Screen Shake</div>
         <div class="sval"><button class="stoggle on" id="toggle-shake"></button></div>
       </div>
+      <div class="srow" id="joy-size-row">
+        <div class="slabel">Joystick Size</div>
+        <div class="sval"><input type="range" min="80" max="200" value="108" id="joy-size"><span id="joy-size-v" style="color:#f0e040;font-size:11px;width:28px">108</span></div>
+      </div>
     </div>
     <!-- Controls -->
     <div class="tab-panel" id="tab-controls">
-      <div class="srow" id="joy-size-row">
-        <div class="slabel">Joystick Size<small>Mobile only</small></div>
-        <div class="sval"><input type="range" min="80" max="200" value="108" id="joy-size"><span id="joy-size-v" style="color:#f0e040;font-size:11px;width:28px">108</span></div>
-      </div>
       <div class="srow">
         <div class="slabel">Move Up<small>Current: <span id="key-up-lbl">W</span></small></div>
         <div class="sval"><button class="pbtn" id="remap-up" style="padding:6px 14px;font-size:11px">REMAP</button></div>
@@ -2513,66 +2513,125 @@ function initMob(){
 
   // ── LEFT joystick (movement) ─────────────────────────────────────
   const ml=document.getElementById('ml');
+  const jb=document.getElementById('jb');
+  let LJ_ID=-1; // track which touch belongs to left joystick
+
   ml.addEventListener('touchstart',e=>{
     e.preventDefault();if(AC&&AC.state==='suspended')AC.resume();
-    JY.on=1;JY.sx=e.touches[0].clientX;JY.sy=e.touches[0].clientY;
+    for(const t of e.changedTouches){
+      if(LJ_ID===-1){
+        LJ_ID=t.identifier;
+        JY.on=1;JY.sx=t.clientX;JY.sy=t.clientY;
+        // Anchor jb at touch point like Brawl Stars
+        const rect=ml.getBoundingClientRect();
+        const sz=SAVE.settings.joySize;
+        const lx=Math.max(sz/2,Math.min(rect.width-sz/2,t.clientX-rect.left));
+        const ly=Math.max(sz/2,Math.min(rect.height-sz/2,t.clientY-rect.top));
+        jb.style.left=(lx-sz/2)+'px';jb.style.top=(ly-sz/2)+'px';
+        jb.style.bottom='auto';
+        document.getElementById('jt').style.transform='translate(-50%,-50%)';
+        break;
+      }
+    }
   },{passive:false});
+
   ml.addEventListener('touchmove',e=>{
     e.preventDefault();if(!JY.on)return;
-    let dx=e.touches[0].clientX-JY.sx,dy=e.touches[0].clientY-JY.sy;
-    const mx=SAVE.settings.joySize/2,l=Math.sqrt(dx*dx+dy*dy);
-    if(l>mx){dx=dx/l*mx;dy=dy/l*mx;}
-    JY.dx=dx/mx;JY.dy=dy/mx;
-    document.getElementById('jt').style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
+    for(const t of e.changedTouches){
+      if(t.identifier===LJ_ID){
+        let dx=t.clientX-JY.sx,dy=t.clientY-JY.sy;
+        const mx=SAVE.settings.joySize/2,l=Math.sqrt(dx*dx+dy*dy);
+        if(l>mx){dx=dx/l*mx;dy=dy/l*mx;}
+        JY.dx=dx/mx;JY.dy=dy/mx;
+        document.getElementById('jt').style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
+        break;
+      }
+    }
   },{passive:false});
+
   ml.addEventListener('touchend',e=>{
-    e.preventDefault();JY.on=0;JY.dx=0;JY.dy=0;
+    e.preventDefault();
+    for(const t of e.changedTouches){
+      if(t.identifier===LJ_ID){
+        LJ_ID=-1;JY.on=0;JY.dx=0;JY.dy=0;
+        document.getElementById('jt').style.transform='translate(-50%,-50%)';
+        // Reset jb to default position
+        const sz=SAVE.settings.joySize;
+        jb.style.left='50px';jb.style.top='auto';jb.style.bottom='55px';
+        break;
+      }
+    }
+  },{passive:false});
+
+  ml.addEventListener('touchcancel',e=>{
+    e.preventDefault();LJ_ID=-1;JY.on=0;JY.dx=0;JY.dy=0;
     document.getElementById('jt').style.transform='translate(-50%,-50%)';
+    jb.style.left='50px';jb.style.top='auto';jb.style.bottom='55px';
   },{passive:false});
 
   // ── RIGHT joystick (360° aim + fire) ────────────────────────────
   const mr=document.getElementById('mr');
   const rjb=document.getElementById('rjb');
   let RJ={on:0,sx:0,sy:0};
+  let RJ_ID=-1; // track which touch belongs to right joystick
 
   mr.addEventListener('touchstart',e=>{
     e.preventDefault();
     if(AC&&AC.state==='suspended')AC.resume();
-    RJ.on=1;
-    // Anchor joystick to touch start position, clamped within right zone
-    const rect=mr.getBoundingClientRect();
-    RJ.sx=e.touches[0].clientX;RJ.sy=e.touches[0].clientY;
-    const sz=SAVE.settings.joySize;
-    const lx=Math.max(sz/2, Math.min(rect.width - sz/2, RJ.sx-rect.left));
-    const ly=Math.max(sz/2, Math.min(rect.height - sz/2, RJ.sy-rect.top));
-    rjb.style.left=(lx-sz/2)+'px';rjb.style.top=(ly-sz/2)+'px';
-    rjb.style.bottom='auto';rjb.style.right='auto';
-    document.getElementById('rjt').style.transform='translate(-50%,-50%)';
-    RT.on=1;
+    for(const t of e.changedTouches){
+      if(RJ_ID===-1){
+        RJ_ID=t.identifier;
+        RJ.on=1;
+        const rect=mr.getBoundingClientRect();
+        RJ.sx=t.clientX;RJ.sy=t.clientY;
+        const sz=SAVE.settings.joySize;
+        const lx=Math.max(sz/2, Math.min(rect.width - sz/2, RJ.sx-rect.left));
+        const ly=Math.max(sz/2, Math.min(rect.height - sz/2, RJ.sy-rect.top));
+        rjb.style.left=(lx-sz/2)+'px';rjb.style.top=(ly-sz/2)+'px';
+        rjb.style.bottom='auto';rjb.style.right='auto';
+        document.getElementById('rjt').style.transform='translate(-50%,-50%)';
+        RT.on=1;
+        break;
+      }
+    }
   },{passive:false});
 
   mr.addEventListener('touchmove',e=>{
     e.preventDefault();if(!RJ.on)return;
-    let dx=e.touches[0].clientX-RJ.sx,dy=e.touches[0].clientY-RJ.sy;
-    const sz=SAVE.settings.joySize/2;
-    const l=Math.sqrt(dx*dx+dy*dy);
-    // Only aim if dragged enough (avoids accidental micro rotation)
-    if(l>8){
-      const cdx=dx/l,cdy=dy/l;
-      if(G.pl&&!G.pl.dead)G.pl.angle=Math.atan2(cdy,cdx);
+    for(const t of e.changedTouches){
+      if(t.identifier===RJ_ID){
+        let dx=t.clientX-RJ.sx,dy=t.clientY-RJ.sy;
+        const sz=SAVE.settings.joySize/2;
+        const l=Math.sqrt(dx*dx+dy*dy);
+        if(l>8){
+          const cdx=dx/l,cdy=dy/l;
+          if(G.pl&&!G.pl.dead)G.pl.angle=Math.atan2(cdy,cdx);
+        }
+        const cx=Math.min(sz,Math.max(-sz,dx));
+        const cy=Math.min(sz,Math.max(-sz,dy));
+        document.getElementById('rjt').style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;
+        tryShootPlayer();
+        break;
+      }
     }
-    // Clamp thumb
-    const cx=Math.min(sz,Math.max(-sz,dx));
-    const cy=Math.min(sz,Math.max(-sz,dy));
-    document.getElementById('rjt').style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;
-    // Fire while joystick is active
-    tryShootPlayer();
   },{passive:false});
 
   mr.addEventListener('touchend',e=>{
-    e.preventDefault();RJ.on=0;RT.on=0;
+    e.preventDefault();
+    for(const t of e.changedTouches){
+      if(t.identifier===RJ_ID){
+        RJ_ID=-1;RJ.on=0;RT.on=0;
+        document.getElementById('rjt').style.transform='translate(-50%,-50%)';
+        const sz=SAVE.settings.joySize;
+        rjb.style.left='auto';rjb.style.right='50px';rjb.style.bottom='55px';rjb.style.top='auto';
+        break;
+      }
+    }
+  },{passive:false});
+
+  mr.addEventListener('touchcancel',e=>{
+    e.preventDefault();RJ_ID=-1;RJ.on=0;RT.on=0;
     document.getElementById('rjt').style.transform='translate(-50%,-50%)';
-    // Reset rjb position
     const sz=SAVE.settings.joySize;
     rjb.style.left='auto';rjb.style.right='50px';rjb.style.bottom='55px';rjb.style.top='auto';
   },{passive:false});
@@ -2830,14 +2889,14 @@ applySettings();
 updateSSCoins();
 checkDaily();
 // Hide keyboard controls tab on mobile/touch devices
-if('ontouchstart' in window || navigator.maxTouchPoints > 0){
+const isTouch='ontouchstart' in window || navigator.maxTouchPoints > 0;
+if(isTouch){
   const ct = document.getElementById('controls-tab');
   if(ct) ct.style.display = 'none';
-  // Show joystick size on mobile
+  // Show joystick size row on mobile (it's inside tab-controls, open that tab by default on mobile)
   const jr = document.getElementById('joy-size-row');
-  if(jr) jr.style.display = 'flex';
+  if(jr) jr.style.removeProperty('display');
 } else {
-  // Hide joystick size on desktop/laptop
   const jr = document.getElementById('joy-size-row');
   if(jr) jr.style.display = 'none';
 }
