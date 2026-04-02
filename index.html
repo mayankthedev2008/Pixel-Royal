@@ -299,6 +299,32 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 #nuke-flash{position:fixed;inset:0;background:radial-gradient(circle,#fff 0%,#ffaa00 40%,transparent 70%);pointer-events:none;z-index:45;opacity:0;transition:opacity .05s}
 /* Black hole overlay */
 #bh-overlay{position:fixed;inset:0;pointer-events:none;z-index:23;opacity:0;transition:opacity .3s;background:radial-gradient(circle at var(--bx,50%) var(--by,50%),rgba(60,0,120,.0) 0%,rgba(60,0,120,.0) 10%,rgba(0,0,0,.5) 60%,rgba(0,0,0,.0) 100%)}
+/* Kill notification BGMI style */
+@keyframes killSlideIn{
+  0%{opacity:0;transform:translateX(60px) scale(.85);}
+  18%{opacity:1;transform:translateX(-4px) scale(1.04);}
+  28%{transform:translateX(0) scale(1);}
+  72%{opacity:1;transform:translateX(0) scale(1);}
+  100%{opacity:0;transform:translateX(30px) scale(.9);}
+}
+.kill-notify{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(0,0,0,.72);
+  border:1px solid rgba(255,80,80,.35);
+  border-left:3px solid #ff4444;
+  border-radius:6px;
+  padding:5px 10px 5px 8px;
+  animation:killSlideIn 2.2s ease forwards;
+  backdrop-filter:blur(6px);
+  min-width:130px;
+}
+.kill-notify .kn-icon{font-size:14px;}
+.kill-notify .kn-text{display:flex;flex-direction:column;gap:1px;}
+.kill-notify .kn-eliminated{font-size:8px;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase;}
+.kill-notify .kn-name{font-size:12px;color:#ff6666;font-weight:bold;letter-spacing:1px;}
+.kill-notify .kn-wpn{font-size:9px;color:rgba(255,200,50,.8);letter-spacing:1px;}
+.kill-notify.boss-kill{border-color:rgba(255,200,0,.6);border-left-color:#f0e040;}
+.kill-notify.boss-kill .kn-name{color:#f0e040;}
 /* ── Rotate Screen Overlay — defined at top of CSS ── */
 </style>
 <body>
@@ -346,7 +372,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 </div>
 
 <!-- Overlays -->
-<div id="combo"><div class="cn" id="cn">x2</div><div class="ct">COMBO KILL!</div></div>
+<div id="kill-notify-container" style="position:fixed;top:60px;right:12px;z-index:50;display:flex;flex-direction:column;gap:6px;pointer-events:none;align-items:flex-end"></div>
 <div id="kflash"></div><div id="zflash"></div><div id="wflash"></div>
 <div id="slowmo-bar">◈ LAST ENEMY ◈</div>
 <div id="lvlup-toast"><div class="lt">LEVEL UP!</div><div class="ls" id="lvlup-sub">LEVEL 2</div></div>
@@ -372,7 +398,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
   <div class="menu-btns" style="position:relative;z-index:1">
     <button class="btn" id="pb">▶ PLAY NOW</button>
     <div class="menu-grid">
-      <button class="btn btn-sec" id="store-btn">🏪 STORE</button>
+      <button class="btn btn-sec" id="store-btn">⚔️ STORE</button>
       <button class="btn btn-sec" id="settings-btn">⚙ SETTINGS</button>
     </div>
     <button class="btn btn-sec" id="credits-btn">★ CREDITS</button>
@@ -502,7 +528,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 <div class="modal" id="store-modal">
   <div class="modal-bg"></div>
   <div class="modal-box">
-    <div class="modal-title">🏪 STORE</div>
+    <div class="modal-title">⚔️ STORE</div>
     <button class="modal-close" id="store-close">✕</button>
     <div class="coins-bar"><span class="ci">🪙</span><span class="ca" id="store-coins">0</span><span class="cl">COINS</span></div>
     <div class="mtabs">
@@ -812,6 +838,7 @@ function newGame(){
     kills:0,combo:0,cbTimer:0,bestCombo:1,
     earnedCoins:0,earnedXP:0,
     cam:{x:0,y:0},sh:{t:0,s:0},
+    camInit:0,
     pl:mkPl(MAP/2,MAP/2),
     bots:[],bullets:[],parts:[],picks:[],
     obs:mkMap(),
@@ -1103,6 +1130,7 @@ function die(e,by){
   SFX.death();FX.hitStop=Math.max(FX.hitStop,e.isBoss?.25:.12);
   if(by&&by.isP){
     G.kills++;G.combo++;G.cbTimer=3;
+    showKillNotify(e);
     const coinBonus=e.isBoss?80:10;
     const xpBonus=e.isBoss?150:30;
     G.earnedCoins+=coinBonus;G.earnedXP+=xpBonus;
@@ -1137,6 +1165,27 @@ function triggerLastKillCinematic(){
     setTimeout(()=>endGame(1),3200);
   },900);
 }
+function showKillNotify(e){
+  const container=document.getElementById('kill-notify-container');
+  if(!container)return;
+  const isBoss=e.isBoss;
+  const names=['ALPHA','BRAVO','CHARLIE','DELTA','ECHO','FOXTROT','GHOST','HAWK','IRON','JAGUAR'];
+  const name=isBoss?'⚠ BOSS':names[e.id%names.length]||'ENEMY';
+  const wpn=GUNS[e.wpn]?GUNS[e.wpn].name:'PISTOL';
+  const div=document.createElement('div');
+  div.className='kill-notify'+(isBoss?' boss-kill':'');
+  div.innerHTML=`<span class="kn-icon">${isBoss?'💀':'☠️'}</span>
+    <div class="kn-text">
+      <span class="kn-eliminated">ELIMINATED</span>
+      <span class="kn-name">${name}</span>
+      <span class="kn-wpn">via ${wpn}</span>
+    </div>`;
+  container.appendChild(div);
+  // Keep max 3 notifications
+  while(container.children.length>3)container.removeChild(container.firstChild);
+  setTimeout(()=>{if(div.parentNode)div.parentNode.removeChild(div);},2200);
+}
+
 function showCombo(n){
   const el=document.getElementById('combo');
   document.getElementById('cn').textContent='x'+n;
@@ -1532,19 +1581,18 @@ function update(now){
     let mx=0,my=0;
     if(MOB){
       if(JY.on){mx=JY.dx;my=JY.dy;}
-      // Autofire while either joystick active
+      // Always autofire — never stops regardless of movement
       const g=GUNS[p.wpn];
-      if((JY.on||RT.on)&&now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}
+      if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}
     }else{
       if(IN.l)mx-=1;if(IN.r)mx+=1;if(IN.u)my-=1;if(IN.d)my+=1;
       const gs=getGameScale();
-      p.angle=Math.atan2((IN.my-H/2)/gs+G.cam.y+H/(2*gs)-p.y+(H/2)/gs,(IN.mx-W/2)/gs+G.cam.x+W/(2*gs)-p.x+(W/2)/gs);
-      // Simplified: unproject mouse from scaled canvas
       const umx=(IN.mx-W/2)/gs+W/2+G.cam.x;
       const umy=(IN.my-H/2)/gs+H/2+G.cam.y;
       p.angle=Math.atan2(umy-p.y,umx-p.x);
-      const shouldFire=IN.fire||(IN.l||IN.r||IN.u||IN.d);
-      if(shouldFire){const g=GUNS[p.wpn];if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}}
+      // Always autofire on desktop too
+      const g=GUNS[p.wpn];
+      if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}
     }
     const l=Math.sqrt(mx*mx+my*my);if(l>0){mx/=l;my/=l;}
     mvEC(p,mx*p.spd*dt,my*p.spd*dt);
@@ -1640,10 +1688,12 @@ function update(now){
   if(!p.dead){
     const ls=FX.slowmo>0?.22:.14;
     const gs=getGameScale()*FX.zoom;
-    // Camera target: player at center of screen, accounting for scale
+    // Player ALWAYS at exact screen center
     const tx=p.x-(W/2)/gs;
     const ty=p.y-(H/2)/gs;
-    G.cam.x+=(tx-G.cam.x)*ls;G.cam.y+=(ty-G.cam.y)*ls;
+    // Snap instantly on first frame, smooth after
+    if(!G.camInit){G.cam.x=tx;G.cam.y=ty;G.camInit=1;}
+    else{G.cam.x+=(tx-G.cam.x)*ls;G.cam.y+=(ty-G.cam.y)*ls;}
   }
   updHUD();
 }
@@ -1983,6 +2033,24 @@ function drawEnt(e){
   X.restore();
 }
 function drawSpecialFX(){
+  // ── Mini Militia style dotted aim line ──
+  if(G.pl&&!G.pl.dead){
+    const p=G.pl;
+    const g=GUNS[p.wpn];
+    const lineLen=Math.min(g.rng*0.55, 220);
+    X.save();
+    X.setLineDash([4,8]);
+    X.lineDashOffset=-(Date.now()*.04%12);
+    X.strokeStyle='rgba(255,255,255,0.45)';
+    X.lineWidth=1.5;
+    X.beginPath();
+    X.moveTo(p.x+Math.cos(p.angle)*18, p.y+Math.sin(p.angle)*18);
+    X.lineTo(p.x+Math.cos(p.angle)*lineLen, p.y+Math.sin(p.angle)*lineLen);
+    X.stroke();
+    X.setLineDash([]);
+    X.restore();
+  }
+
   // Black hole vortex
   if(PU_ACTIVE.blackhole){
     const bh=PU_ACTIVE.blackhole;
@@ -2131,48 +2199,87 @@ function updHUD(){
 // ════════════════════════════════════════
 function drawMinimap(){
   const mc=document.getElementById('mm-canvas');
-  if(!mc)return;
+  if(!mc||!G.pl)return;
   const mx=mc.getContext('2d');
-  const S=130,scale=S/MAP;
+  const S=80; // canvas size
+  const VIEW=600; // world units visible on minimap (zoom level)
+  const scale=S/VIEW;
+  // Player is always at center of minimap
+  const px=G.pl.x,py=G.pl.y;
+  const offX=px-VIEW/2,offY=py-VIEW/2;
+
   mx.clearRect(0,0,S,S);
+  mx.save();
+  // Clip to circle (BGMI style round minimap)
+  mx.beginPath();mx.arc(S/2,S/2,S/2,0,Math.PI*2);mx.clip();
+
   // Background
-  mx.fillStyle='rgba(10,20,10,.88)';mx.fillRect(0,0,S,S);
+  mx.fillStyle='rgba(8,18,8,.92)';mx.fillRect(0,0,S,S);
+
+  // Grid lines
+  mx.strokeStyle='rgba(255,255,255,.04)';mx.lineWidth=0.5;
+  const gridSize=100*scale;
+  const gStartX=(-offX%100)*scale,gStartY=(-offY%100)*scale;
+  for(let gx=gStartX;gx<S;gx+=gridSize){mx.beginPath();mx.moveTo(gx,0);mx.lineTo(gx,S);mx.stroke();}
+  for(let gy=gStartY;gy<S;gy+=gridSize){mx.beginPath();mx.moveTo(0,gy);mx.lineTo(S,gy);mx.stroke();}
+
   // Obstacles
-  mx.fillStyle='rgba(60,100,60,.75)';
-  for(const o of G.obs)mx.fillRect(o.x*scale,o.y*scale,Math.max(2,o.w*scale),Math.max(2,o.h*scale));
+  mx.fillStyle='rgba(60,110,60,.8)';
+  for(const o of G.obs){
+    if(G.destroyedWalls&&G.destroyedWalls.has(o.id))continue;
+    const sx=(o.x-offX)*scale,sy=(o.y-offY)*scale;
+    const sw=Math.max(2,o.w*scale),sh=Math.max(2,o.h*scale);
+    if(sx+sw<0||sx>S||sy+sh<0||sy>S)continue;
+    mx.fillRect(sx,sy,sw,sh);
+  }
+
   // Zone circle
   const z=G.zone;
-  mx.beginPath();mx.arc(z.cx*scale,z.cy*scale,z.r*scale,0,Math.PI*2);
+  const zcx=(z.cx-offX)*scale,zcy=(z.cy-offY)*scale,zr=z.r*scale;
   const pulse=.55+.45*Math.sin(Date.now()*.004);
-  mx.strokeStyle=`rgba(180,0,255,${pulse})`;mx.lineWidth=1.5;mx.stroke();
-  // Danger fill outside zone
   mx.save();
-  mx.beginPath();mx.rect(0,0,S,S);mx.arc(z.cx*scale,z.cy*scale,z.r*scale,0,Math.PI*2,true);
-  mx.fillStyle='rgba(120,0,180,.18)';mx.fill();mx.restore();
+  mx.beginPath();mx.rect(0,0,S,S);
+  mx.arc(zcx,zcy,zr,0,Math.PI*2,true);
+  mx.fillStyle='rgba(120,0,180,.22)';mx.fill();mx.restore();
+  mx.beginPath();mx.arc(zcx,zcy,zr,0,Math.PI*2);
+  mx.strokeStyle=`rgba(180,0,255,${pulse})`;mx.lineWidth=1.5;mx.stroke();
+
   // Pickups
   for(const pk of G.picks){
     if(pk.taken)continue;
+    const sx=(pk.x-offX)*scale,sy=(pk.y-offY)*scale;
+    if(sx<0||sx>S||sy<0||sy>S)continue;
     mx.fillStyle=GUNS[pk.wpn].col;
-    mx.beginPath();mx.arc(pk.x*scale,pk.y*scale,2.5,0,Math.PI*2);mx.fill();
+    mx.beginPath();mx.arc(sx,sy,2,0,Math.PI*2);mx.fill();
   }
+
   // Bots
   for(const b of G.bots){
     if(b.dead)continue;
-    mx.fillStyle=b.color;
-    mx.beginPath();mx.arc(b.x*scale,b.y*scale,3,0,Math.PI*2);mx.fill();
+    const sx=(b.x-offX)*scale,sy=(b.y-offY)*scale;
+    if(sx<-4||sx>S+4||sy<-4||sy>S+4)continue;
+    mx.fillStyle=b.isBoss?'#ff2244':b.color;
+    mx.beginPath();mx.arc(sx,sy,b.isBoss?4:2.5,0,Math.PI*2);mx.fill();
   }
-  // Player — blinking dot
-  if(!G.pl.dead){
-    const blink=Math.sin(Date.now()*.008)>.2;
-    if(blink){
-      mx.shadowBlur=6;mx.shadowColor='#44ffaa';
-      mx.fillStyle='#44ffaa';
-      mx.beginPath();mx.arc(G.pl.x*scale,G.pl.y*scale,4,0,Math.PI*2);mx.fill();
-      mx.shadowBlur=0;
-    }
+
+  // Player — always center, blinking green dot with direction arrow
+  const blink=Math.sin(Date.now()*.01)>.0;
+  if(blink){
+    mx.shadowBlur=8;mx.shadowColor='#44ffaa';
+    mx.fillStyle='#44ffaa';
+    mx.beginPath();mx.arc(S/2,S/2,4,0,Math.PI*2);mx.fill();
+    mx.shadowBlur=0;
+    // Direction indicator
+    const al=G.pl.angle;
+    mx.strokeStyle='#44ffaa';mx.lineWidth=1.5;
+    mx.beginPath();mx.moveTo(S/2,S/2);
+    mx.lineTo(S/2+Math.cos(al)*8,S/2+Math.sin(al)*8);mx.stroke();
   }
-  // Border
-  mx.strokeStyle='rgba(255,255,255,.12)';mx.lineWidth=1;mx.strokeRect(0,0,S,S);
+
+  mx.restore();
+  // Round border
+  mx.beginPath();mx.arc(S/2,S/2,S/2-1,0,Math.PI*2);
+  mx.strokeStyle='rgba(255,255,255,.25)';mx.lineWidth=1.5;mx.stroke();
 }
 
 // ════════════════════════════════════════
