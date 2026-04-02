@@ -325,6 +325,19 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 .kill-notify .kn-wpn{font-size:9px;color:rgba(255,200,50,.8);letter-spacing:1px;}
 .kill-notify.boss-kill{border-color:rgba(255,200,0,.6);border-left-color:#f0e040;}
 .kill-notify.boss-kill .kn-name{color:#f0e040;}
+/* Music player controls */
+#music-player button{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(0,0,0,.55);
+  border:1.5px solid rgba(80,255,200,.35);
+  color:rgba(80,255,200,.85);font-size:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;backdrop-filter:blur(6px);
+  box-shadow:0 0 10px rgba(80,255,200,.15);
+}
+#music-player button:hover{background:rgba(80,255,200,.15);border-color:rgba(80,255,200,.7);box-shadow:0 0 18px rgba(80,255,200,.35);}
+#music-player button:active{transform:scale(.92);}
+#music-toggle{width:42px!important;height:42px!important;font-size:16px!important;}
 /* ── Rotate Screen Overlay — defined at top of CSS ── */
 </style>
 <body>
@@ -413,6 +426,13 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
   <div class="ss-footer">
     <div class="ss-coins">🪙 <span id="ss-coins">0</span></div>
     <div class="ss-lvl">⭐ LVL <span id="ss-lvl">1</span></div>
+  </div>
+  <!-- Music Player Controls -->
+  <div id="music-player" style="position:fixed;bottom:max(14px,env(safe-area-inset-bottom));right:14px;z-index:102;display:flex;align-items:center;gap:8px;">
+    <div id="music-track-name" style="font-size:9px;color:rgba(80,255,200,.6);letter-spacing:1.5px;text-align:right;max-width:80px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">BGM 1</div>
+    <button id="music-prev" title="Previous">⏮</button>
+    <button id="music-toggle" title="Play/Pause">⏸</button>
+    <button id="music-next" title="Next">⏭</button>
   </div>
 </div>
 
@@ -631,69 +651,87 @@ loadSave();
 // ════════════════════════════════════════
 const BGM_BASE='https://raw.githubusercontent.com/mayankthedev2008/Pixel-Royal/main/';
 const BGM_TRACKS=['BGM1.mp3','BGM2.mp3','BGM3.mp3'];
-let bgmAudio=null,bgmMenuAudio=null,bgmCurrentTrack=-1;
+let bgmAudio=null,bgmMenuAudio=null;
+let bgmPlaying=false,bgmIsMenu=true;
 
-function getRandomTrack(exclude=-1){
-  let idx;
-  do{idx=Math.floor(Math.random()*BGM_TRACKS.length);}
-  while(BGM_TRACKS.length>1&&idx===exclude);
+// Shuffle queue — no repeat until all played
+let bgmQueue=[],bgmHistory=[],bgmQueueIdx=0;
+function buildQueue(){
+  // Fisher-Yates shuffle
+  bgmQueue=[...BGM_TRACKS.keys()];// [0,1,2]
+  for(let i=bgmQueue.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [bgmQueue[i],bgmQueue[j]]=[bgmQueue[j],bgmQueue[i]];
+  }
+  bgmQueueIdx=0;
+}
+function nextQueueTrack(){
+  if(bgmQueueIdx>=bgmQueue.length)buildQueue();
+  const idx=bgmQueue[bgmQueueIdx++];
+  bgmHistory.push(idx);
+  if(bgmHistory.length>BGM_TRACKS.length)bgmHistory.shift();
   return idx;
+}
+function prevQueueTrack(){
+  if(bgmHistory.length>=2){bgmHistory.pop();return bgmHistory[bgmHistory.length-1];}
+  return bgmHistory[0]||0;
+}
+
+function updateTrackLabel(idx){
+  const el=document.getElementById('music-track-name');
+  if(el)el.textContent='BGM '+(idx+1);
+}
+function updatePlayBtn(playing){
+  const btn=document.getElementById('music-toggle');
+  if(btn)btn.textContent=playing?'⏸':'▶';
+}
+
+function getAudio(){return bgmIsMenu?bgmMenuAudio:bgmAudio;}
+function setAudio(a){if(bgmIsMenu)bgmMenuAudio=a;else bgmAudio=a;}
+
+function playTrack(idx){
+  // Stop existing
+  const old=getAudio();
+  if(old){old.pause();old.src='';old.onended=null;}
+  const a=new Audio(BGM_BASE+BGM_TRACKS[idx]);
+  a.volume=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
+  a.onended=()=>{ const ni=nextQueueTrack();playTrack(ni); };
+  a.play().catch(()=>{});
+  setAudio(a);
+  bgmPlaying=true;
+  updateTrackLabel(idx);
+  updatePlayBtn(true);
 }
 
 function startMenuMusic(){
+  bgmIsMenu=true;
   stopAllMusic();
-  const idx=getRandomTrack();
-  bgmMenuAudio=new Audio(BGM_BASE+BGM_TRACKS[idx]);
-  bgmMenuAudio.loop=false;
-  bgmMenuAudio.volume=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
-  bgmMenuAudio.play().catch(()=>{});
-  bgmCurrentTrack=idx;
-  // When track ends, play another random one
-  bgmMenuAudio.onended=()=>{
-    if(bgmMenuAudio){
-      const next=getRandomTrack(bgmCurrentTrack);
-      bgmCurrentTrack=next;
-      bgmMenuAudio.src=BGM_BASE+BGM_TRACKS[next];
-      bgmMenuAudio.play().catch(()=>{});
-    }
-  };
+  buildQueue();
+  const idx=nextQueueTrack();
+  playTrack(idx);
 }
-
 function startMusic(){
+  bgmIsMenu=false;
   stopAllMusic();
-  const idx=getRandomTrack();
-  bgmAudio=new Audio(BGM_BASE+BGM_TRACKS[idx]);
-  bgmAudio.loop=false;
-  bgmAudio.volume=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
-  bgmAudio.play().catch(()=>{});
-  bgmCurrentTrack=idx;
-  // When track ends, play another random one
-  bgmAudio.onended=()=>{
-    if(bgmAudio){
-      const next=getRandomTrack(bgmCurrentTrack);
-      bgmCurrentTrack=next;
-      bgmAudio.src=BGM_BASE+BGM_TRACKS[next];
-      bgmAudio.play().catch(()=>{});
-    }
-  };
+  buildQueue();
+  const idx=nextQueueTrack();
+  playTrack(idx);
 }
-
 function stopMusic(){
-  if(bgmAudio){bgmAudio.pause();bgmAudio.src='';bgmAudio=null;}
+  const a=bgmAudio;
+  if(a){a.pause();a.src='';a.onended=null;bgmAudio=null;}
 }
-
 function stopAllMusic(){
-  if(bgmAudio){bgmAudio.pause();bgmAudio.src='';bgmAudio=null;}
-  if(bgmMenuAudio){bgmMenuAudio.pause();bgmMenuAudio.src='';bgmMenuAudio=null;}
+  if(bgmAudio){bgmAudio.pause();bgmAudio.src='';bgmAudio.onended=null;bgmAudio=null;}
+  if(bgmMenuAudio){bgmMenuAudio.pause();bgmMenuAudio.src='';bgmMenuAudio.onended=null;bgmMenuAudio=null;}
+  bgmPlaying=false;
 }
-
 function applyMusicVolume(){
   const vol=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
   if(bgmAudio)bgmAudio.volume=vol;
   if(bgmMenuAudio)bgmMenuAudio.volume=vol;
 }
-
-function setMusicIntense(v){} // no-op, kept for compatibility
+function setMusicIntense(v){}
 
 // ════════════════════════════════════════
 //  AUDIO ENGINE (SFX only)
@@ -2825,6 +2863,22 @@ function goMenu(){
   updateSSCoins();
   startMenuMusic();
 }
+// Music player controls (home screen)
+document.getElementById('music-prev').addEventListener('click',()=>{
+  const idx=prevQueueTrack();
+  playTrack(idx);
+});
+document.getElementById('music-next').addEventListener('click',()=>{
+  const idx=nextQueueTrack();
+  playTrack(idx);
+});
+document.getElementById('music-toggle').addEventListener('click',()=>{
+  const a=getAudio();
+  if(!a)return;
+  if(bgmPlaying){a.pause();bgmPlaying=false;updatePlayBtn(false);}
+  else{a.play().catch(()=>{});bgmPlaying=true;updatePlayBtn(true);}
+});
+
 document.getElementById('pb').addEventListener('click',startGame);
 document.getElementById('rb').addEventListener('click',restartGame);
 document.getElementById('mb').addEventListener('click',()=>{SFX.click();goMenu();});
