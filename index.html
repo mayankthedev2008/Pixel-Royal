@@ -1639,8 +1639,10 @@ function update(now){
   if(G.sh.t>0)G.sh.t-=rawDt;
   if(!p.dead){
     const ls=FX.slowmo>0?.22:.14;
-    const gs=getGameScale();
-    const tx=p.x-(W/2)/gs,ty=p.y-(H/2)/gs;
+    const gs=getGameScale()*FX.zoom;
+    // Camera target: player at center of screen, accounting for scale
+    const tx=p.x-(W/2)/gs;
+    const ty=p.y-(H/2)/gs;
     G.cam.x+=(tx-G.cam.x)*ls;G.cam.y+=(ty-G.cam.y)*ls;
   }
   updHUD();
@@ -1650,12 +1652,10 @@ function update(now){
 //  RENDER
 // ════════════════════════════════════════
 function getGameScale(){
-  // On small screens (mobile), scale down so more of the map is visible
-  const baseW=900,baseH=600;
+  // Fixed zoom level — shows good amount of map on mobile
+  const baseW=700,baseH=500;
   const scaleX=W/baseW,scaleY=H/baseH;
-  const scale=Math.min(1,scaleX,scaleY);
-  // Slightly less zoomed out than before
-  return Math.min(scale, 0.88);
+  return Math.min(1,scaleX,scaleY);
 }
 
 function render(){
@@ -1664,13 +1664,12 @@ function render(){
   let sx=0,sy=0;
   if(G.sh.t>0&&SAVE.settings.shake){const s=G.sh.s*(G.sh.t/.24);sx=(Math.random()-.5)*s;sy=(Math.random()-.5)*s;}
   X.save();X.translate(sx,sy);
-  // Responsive scale for small screens
+  // Scale from center so player stays centered
   const gs=getGameScale();
-  if(gs!==1||FX.zoom!==1){
-    X.translate(W/2,H/2);
-    X.scale(gs*FX.zoom,gs*FX.zoom);
-    X.translate(-W/2,-H/2);
-  }
+  const totalScale=gs*FX.zoom;
+  X.translate(W/2,H/2);
+  X.scale(totalScale,totalScale);
+  X.translate(-W/2,-H/2);
   X.save();X.translate(-G.cam.x,-G.cam.y);
   drawWorld();drawZone();drawPicks();drawSpecialFX();drawEnts();drawBullets();drawParts();
   X.restore();
