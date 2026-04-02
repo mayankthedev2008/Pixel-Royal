@@ -47,51 +47,51 @@ canvas{display:block;position:fixed;top:0;left:0;}
 
 /* ── HUD ── */
 #hud{position:fixed;top:0;left:0;width:100%;pointer-events:none;z-index:20;display:none}
-#hud-top{display:flex;justify-content:center;gap:12px;padding:12px;padding-top:max(12px,env(safe-area-inset-top));flex-wrap:wrap}
+#hud-top{display:flex;justify-content:center;gap:6px;padding:6px;padding-top:max(6px,env(safe-area-inset-top));flex-wrap:wrap}
 .hpill{background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);
-  border-radius:22px;padding:7px 18px;color:#fff;font-size:13px;letter-spacing:1.5px;
-  text-transform:uppercase;display:flex;align-items:center;gap:7px}
-.hpill .v{color:#f0e040;font-weight:bold;font-size:17px;min-width:28px;text-align:center;transition:transform .1s}
+  border-radius:16px;padding:4px 10px;color:#fff;font-size:10px;letter-spacing:1px;
+  text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.hpill .v{color:#f0e040;font-weight:bold;font-size:13px;min-width:20px;text-align:center;transition:transform .1s}
 #tp .v{color:#ff5555}
 
-/* ── HP Bar — BGMI style center bottom ── */
+/* ── HP Bar — compact center bottom ── */
 #hp-center{
-  position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  pointer-events:none;z-index:22;width:clamp(260px,38vw,480px);
+  position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  pointer-events:none;z-index:22;width:clamp(180px,44vw,340px);
 }
-#hp-wrap{display:flex;flex-direction:column;gap:5px;width:100%}
+#hp-wrap{display:flex;flex-direction:column;gap:3px;width:100%}
 #hp-top-row{display:flex;justify-content:space-between;align-items:center}
-#hp-lbl{color:rgba(255,255,255,.5);font-size:11px;letter-spacing:3px;text-transform:uppercase}
-#hp-n{color:#fff;font-size:15px;font-weight:bold;letter-spacing:1px;text-shadow:0 0 8px rgba(80,255,120,.4)}
-#hp-bg{height:18px;background:rgba(0,0,0,.55);border-radius:10px;overflow:hidden;
-  border:1px solid rgba(255,255,255,.12);box-shadow:0 0 12px rgba(0,0,0,.6);width:100%}
-#hp-bar{height:100%;width:100%;border-radius:10px;transition:width .12s linear,background .25s;
-  box-shadow:0 0 8px rgba(80,255,120,.3)}
-#hp-regen{color:rgba(80,255,120,.85);font-size:10px;letter-spacing:2px;opacity:0;transition:opacity .4s;text-align:center}
+#hp-lbl{color:rgba(255,255,255,.5);font-size:9px;letter-spacing:2px;text-transform:uppercase}
+#hp-n{color:#fff;font-size:12px;font-weight:bold;letter-spacing:1px;text-shadow:0 0 8px rgba(80,255,120,.4)}
+#hp-bg{height:13px;background:rgba(0,0,0,.55);border-radius:7px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);box-shadow:0 0 8px rgba(0,0,0,.6);width:100%}
+#hp-bar{height:100%;width:100%;border-radius:7px;transition:width .12s linear,background .25s;
+  box-shadow:0 0 6px rgba(80,255,120,.3)}
+#hp-regen{color:rgba(80,255,120,.85);font-size:8px;letter-spacing:2px;opacity:0;transition:opacity .4s;text-align:center}
 
 /* ── XP bar bottom-left, weapon bottom-right ── */
-#hud-btm{position:fixed;bottom:0;left:0;width:100%;padding:0 18px max(18px,env(safe-area-inset-bottom));pointer-events:none;
-  display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
-#xp-wrap{display:flex;flex-direction:column;gap:3px}
-#xp-lbl{color:rgba(255,255,255,.35);font-size:9px;letter-spacing:2px}
-#xp-bg{width:clamp(120px,22vw,220px);height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-#xp-bar{height:100%;background:linear-gradient(90deg,#8844ff,#cc88ff);border-radius:3px;transition:width .3s}
+#hud-btm{position:fixed;bottom:0;left:0;width:100%;padding:0 10px max(10px,env(safe-area-inset-bottom));pointer-events:none;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+#xp-wrap{display:flex;flex-direction:column;gap:2px}
+#xp-lbl{color:rgba(255,255,255,.35);font-size:7px;letter-spacing:1.5px}
+#xp-bg{width:clamp(80px,18vw,160px);height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+#xp-bar{height:100%;background:linear-gradient(90deg,#8844ff,#cc88ff);border-radius:2px;transition:width .3s}
 #wbox{background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px);
-  border-radius:12px;padding:9px 16px;text-align:right;transition:transform .12s;pointer-events:all}
-#wbox .wn{color:#f0c040;font-size:16px;font-weight:bold;letter-spacing:2px}
-#wbox .ws{color:rgba(255,255,255,.35);font-size:11px;letter-spacing:1px;margin-top:2px}
-#pause-btn{position:fixed;top:max(12px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));pointer-events:all;background:rgba(0,0,0,.6);
-  border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:22px;
-  width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:21}
+  border-radius:8px;padding:5px 10px;text-align:right;transition:transform .12s;pointer-events:all}
+#wbox .wn{color:#f0c040;font-size:12px;font-weight:bold;letter-spacing:1.5px}
+#wbox .ws{color:rgba(255,255,255,.35);font-size:8px;letter-spacing:1px;margin-top:1px}
+#pause-btn{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(8px,env(safe-area-inset-right));pointer-events:all;background:rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#fff;font-size:16px;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:21}
 #lvl-badge{position:fixed;top:10px;left:14px;pointer-events:none;background:rgba(136,68,255,.25);
   border:1px solid rgba(136,68,255,.5);border-radius:20px;padding:4px 12px;
   color:#cc88ff;font-size:11px;letter-spacing:2px;z-index:21;display:none}
 /* ── Minimap ── */
-#minimap{position:fixed;top:max(10px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));z-index:22;pointer-events:none;display:none}
-#minimap canvas{border-radius:8px;border:1px solid rgba(255,255,255,.18);
-  box-shadow:0 0 12px rgba(0,0,0,.7),0 0 4px rgba(80,255,160,.12);display:block}
-#mm-label{color:rgba(255,255,255,.3);font-size:8px;letter-spacing:2px;text-align:center;margin-top:3px}
+#minimap{position:fixed;top:max(6px,env(safe-area-inset-top));left:max(6px,env(safe-area-inset-left));z-index:22;pointer-events:none;display:none}
+#minimap canvas{border-radius:6px;border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 0 8px rgba(0,0,0,.7),0 0 3px rgba(80,255,160,.12);display:block}
+#mm-label{color:rgba(255,255,255,.3);font-size:7px;letter-spacing:2px;text-align:center;margin-top:2px}
 
 /* ── Overlays ── */
 #combo{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:30;text-align:center;opacity:0}
@@ -285,12 +285,12 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 @keyframes nukeWarning{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.4;transform:translateX(-50%) scale(1.08)}}
 @keyframes laserPulse{0%,100%{box-shadow:0 0 20px rgba(255,50,50,.8)}50%{box-shadow:0 0 50px rgba(255,50,50,1),0 0 80px rgba(255,100,0,.6)}}
 /* Power-up HUD bar */
-#powerup-bar{position:fixed;bottom:max(56px,calc(env(safe-area-inset-bottom) + 40px));left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:22;pointer-events:none}
-.pu-slot{width:52px;height:52px;border-radius:10px;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;position:relative;transition:all .15s;backdrop-filter:blur(6px)}
-.pu-slot.active{border-color:#f0e040;box-shadow:0 0 15px rgba(240,224,64,.5);background:rgba(240,224,64,.12)}
-.pu-slot.ready{border-color:#44ffaa;box-shadow:0 0 12px rgba(68,255,170,.4);animation:none}
-.pu-slot .pu-key{position:absolute;bottom:2px;right:4px;font-size:8px;color:rgba(255,255,255,.4);letter-spacing:0}
-.pu-slot .pu-cd{position:absolute;inset:0;border-radius:8px;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;letter-spacing:1px}
+#powerup-bar{position:fixed;bottom:max(46px,calc(env(safe-area-inset-bottom) + 34px));left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:22;pointer-events:all}
+.pu-slot{width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;position:relative;transition:all .15s;backdrop-filter:blur(6px)}
+.pu-slot.active{border-color:#f0e040;box-shadow:0 0 10px rgba(240,224,64,.5);background:rgba(240,224,64,.12)}
+.pu-slot.ready{border-color:#44ffaa;box-shadow:0 0 8px rgba(68,255,170,.4);animation:none}
+.pu-slot .pu-key{position:absolute;bottom:1px;right:3px;font-size:7px;color:rgba(255,255,255,.4);letter-spacing:0}
+.pu-slot .pu-cd{position:absolute;inset:0;border-radius:7px;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;letter-spacing:1px}
 /* Boss warning */
 #boss-alert{position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;text-align:center;opacity:0;transition:opacity .3s}
 #boss-alert .ba-title{font-size:clamp(22px,5vw,38px);color:#ff3344;text-shadow:0 0 20px #ff0000,0 0 50px #ff000066;letter-spacing:6px;font-weight:bold;animation:nukeWarning 0.6s infinite}
@@ -315,7 +315,7 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 <!-- HUD -->
 <div id="hud">
   <div id="lvl-badge">LVL <span id="hud-lvl">1</span></div>
-  <div id="minimap"><canvas id="mm-canvas" width="130" height="130"></canvas><div id="mm-label">MAP</div></div>
+  <div id="minimap"><canvas id="mm-canvas" width="80" height="80"></canvas><div id="mm-label">MAP</div></div>
   <button id="pause-btn" title="Pause">⏸</button>
   <div id="hud-top">
     <div class="hpill" id="tp">⏱<span class="v" id="tm">2:00</span></div>
@@ -2498,17 +2498,17 @@ function initMob(){
   document.getElementById('ml').style.display='block';
   document.getElementById('mr').style.display='block';
   document.getElementById('tips').innerHTML='<div class="tip">LEFT · MOVE</div><div class="tip">RIGHT · AIM+FIRE</div><div class="tip">⏸ · PAUSE</div>';
-  // Mobile power-up buttons
-  const puMob=document.createElement('div');
-  puMob.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:20';
+  // Make powerup slots touchable on mobile
   for(let i=0;i<3;i++){
-    const btn=document.createElement('button');
-    btn.style.cssText='width:48px;height:48px;border-radius:10px;background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.2);color:#fff;font-size:20px;pointer-events:all;cursor:pointer';
-    btn.id='mob-pu-'+i;
-    btn.addEventListener('touchstart',e=>{e.preventDefault();activatePowerUp(i);},{passive:false});
-    puMob.appendChild(btn);
+    const slot=document.getElementById('pu'+i);
+    if(slot){
+      slot.style.pointerEvents='all';
+      slot.addEventListener('touchstart',e=>{e.preventDefault();activatePowerUp(i);},{passive:false});
+    }
   }
-  document.body.appendChild(puMob);
+  // Also make powerup bar itself pointer-events:all
+  const pb=document.getElementById('powerup-bar');
+  if(pb) pb.style.pointerEvents='all';
   applyJoySize();
 
   // ── LEFT joystick (movement) ─────────────────────────────────────
