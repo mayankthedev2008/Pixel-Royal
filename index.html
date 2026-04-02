@@ -203,38 +203,38 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 .daily-claimed{color:rgba(255,255,255,.3);font-size:11px;letter-spacing:2px;margin-top:12px}
 
 /* Screens */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;overflow-y:auto;overflow-x:hidden}
 #ss{background:radial-gradient(ellipse at 50% 55%,#0c1c0c 0%,#050508 65%);
-  padding:max(20px,env(safe-area-inset-top)) 20px max(90px,calc(env(safe-area-inset-bottom) + 70px)) 20px;
+  padding:max(10px,env(safe-area-inset-top)) 16px max(60px,calc(env(safe-area-inset-bottom) + 50px)) 16px;
   justify-content:center;align-items:center;gap:0;}
 .scl{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none}
-.game-title{font-size:clamp(18px,5vw,56px);color:#f0e040;letter-spacing:clamp(2px,1vw,6px);
-  text-shadow:0 0 10px #f0e040,0 0 30px #f0c000,0 0 70px #f08000,4px 4px 0 #7a6000;
-  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:2px;margin-top:6px;text-align:center}
-.game-sub{font-size:clamp(6px,1.3vw,11px);color:#4dff88;letter-spacing:clamp(1px,0.6vw,4px);margin-bottom:10px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
-.menu-btns{display:flex;flex-direction:column;gap:7px;width:min(240px,80vw)}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.tips{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center;padding:0 20px}
-.tip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 12px;font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1.5px}
-.ss-footer{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:24px;align-items:center;z-index:101;
-  background:rgba(5,5,8,.8);padding:8px 20px;border-radius:20px;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px)}
-.ss-coins{color:#f0e040;font-size:14px;letter-spacing:2px}
-.ss-lvl{color:#cc88ff;font-size:13px;letter-spacing:2px}
+.game-title{font-size:clamp(14px,4.5vw,48px);color:#f0e040;letter-spacing:clamp(1px,0.8vw,5px);
+  text-shadow:0 0 10px #f0e040,0 0 30px #f0c000,0 0 70px #f08000,3px 3px 0 #7a6000;
+  animation:tp 3s ease-in-out infinite;position:relative;margin-bottom:1px;margin-top:4px;text-align:center}
+.game-sub{font-size:clamp(5px,1.1vw,10px);color:#4dff88;letter-spacing:clamp(1px,0.5vw,3px);margin-bottom:8px;opacity:.8;text-shadow:0 0 10px #4dff88;text-align:center}
+.menu-btns{display:flex;flex-direction:column;gap:5px;width:min(220px,78vw)}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.tips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;padding:0 10px}
+.tip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:4px 8px;font-size:8px;color:rgba(255,255,255,.45);letter-spacing:1px}
+@media(max-height:600px){.tips{display:none}}
+.ss-footer{position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:18px;align-items:center;z-index:101;
+  background:rgba(5,5,8,.8);padding:5px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(8px)}
+.ss-coins{color:#f0e040;font-size:12px;letter-spacing:1.5px}
+.ss-lvl{color:#cc88ff;font-size:11px;letter-spacing:1.5px}
 
 /* Buttons */
 .btn{pointer-events:all;background:linear-gradient(135deg,#f0e040,#d08010);color:#050508;border:none;
-  border-radius:10px;padding:13px 30px;font-size:16px;font-family:'Courier New',monospace;
-  letter-spacing:3px;font-weight:bold;cursor:pointer;text-transform:uppercase;
-  box-shadow:0 0 20px rgba(240,224,64,.3),0 4px 0 #7a6000;
+  border-radius:8px;padding:10px 20px;font-size:14px;font-family:'Courier New',monospace;
+  letter-spacing:2px;font-weight:bold;cursor:pointer;text-transform:uppercase;
+  box-shadow:0 0 16px rgba(240,224,64,.3),0 3px 0 #7a6000;
   transition:transform .1s,box-shadow .1s,filter .1s;animation:bp 2s ease-in-out infinite;
   position:relative;overflow:hidden;width:100%}
 .btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:bs 2.8s ease-in-out infinite}
-.btn:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(240,224,64,.55),0 6px 0 #7a6000;filter:brightness(1.08)}
-.btn:active{transform:translateY(2px);box-shadow:0 0 10px rgba(240,224,64,.2),0 1px 0 #7a6000;filter:brightness(.95)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(240,224,64,.55),0 5px 0 #7a6000;filter:brightness(1.08)}
+.btn:active{transform:translateY(2px);box-shadow:0 0 8px rgba(240,224,64,.2),0 1px 0 #7a6000;filter:brightness(.95)}
 .btn-sec{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);
-  box-shadow:none;animation:none;font-size:13px;padding:10px 18px;letter-spacing:2px}
+  box-shadow:none;animation:none;font-size:11px;padding:8px 12px;letter-spacing:1.5px}
 .btn-sec::after{display:none}
 .btn-sec:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
 
@@ -1532,9 +1532,9 @@ function update(now){
     let mx=0,my=0;
     if(MOB){
       if(JY.on){mx=JY.dx;my=JY.dy;}
-      if(RT.on){p.angle=Math.atan2(RT.y+G.cam.y-p.y,RT.x+G.cam.x-p.x);}
-      // Mobile autofire: always fire while joystick is held
-      if(JY.on){const g=GUNS[p.wpn];if(now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}}
+      // Autofire while either joystick active
+      const g=GUNS[p.wpn];
+      if((JY.on||RT.on)&&now-p.lf>=g.rate){p.lf=now;shoot(p,p.x,p.y,p.angle,p.wpn);}
     }else{
       if(IN.l)mx-=1;if(IN.r)mx+=1;if(IN.u)my-=1;if(IN.d)my+=1;
       const gs=getGameScale();
@@ -2601,16 +2601,16 @@ function initMob(){
     for(const t of e.changedTouches){
       if(t.identifier===RJ_ID){
         let dx=t.clientX-RJ.sx,dy=t.clientY-RJ.sy;
-        const sz=SAVE.settings.joySize/2;
         const l=Math.sqrt(dx*dx+dy*dy);
-        if(l>8){
-          const cdx=dx/l,cdy=dy/l;
-          if(G.pl&&!G.pl.dead)G.pl.angle=Math.atan2(cdy,cdx);
+        // Set aim angle from drag direction (even small movement)
+        if(l>4){
+          if(G.pl&&!G.pl.dead) G.pl.angle=Math.atan2(dy,dx);
         }
+        // Clamp thumb visual
+        const sz=SAVE.settings.joySize/2;
         const cx=Math.min(sz,Math.max(-sz,dx));
         const cy=Math.min(sz,Math.max(-sz,dy));
         document.getElementById('rjt').style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;
-        tryShootPlayer();
         break;
       }
     }
@@ -2789,6 +2789,24 @@ checkOrientation();
     const bg=mx.createRadialGradient(400,300,60,400,300,500);
     bg.addColorStop(0,'#0c1c0c');bg.addColorStop(1,'#050508');
     mx.fillStyle=bg;mx.fillRect(0,0,800,600);
+
+    // ── Grid lines (professional look) ──
+    const GRID=50;
+    mx.strokeStyle='rgba(80,255,160,0.055)';mx.lineWidth=1;
+    for(let gx=0;gx<=800;gx+=GRID){
+      mx.beginPath();mx.moveTo(gx,0);mx.lineTo(gx,600);mx.stroke();
+    }
+    for(let gy=0;gy<=600;gy+=GRID){
+      mx.beginPath();mx.moveTo(0,gy);mx.lineTo(800,gy);mx.stroke();
+    }
+    // Slightly brighter lines every 200px
+    mx.strokeStyle='rgba(80,255,160,0.10)';mx.lineWidth=1;
+    for(let gx=0;gx<=800;gx+=200){
+      mx.beginPath();mx.moveTo(gx,0);mx.lineTo(gx,600);mx.stroke();
+    }
+    for(let gy=0;gy<=600;gy+=200){
+      mx.beginPath();mx.moveTo(0,gy);mx.lineTo(800,gy);mx.stroke();
+    }
 
     // ── Grid dots ──
     for(const d of dots){
