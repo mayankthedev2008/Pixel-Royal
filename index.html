@@ -627,10 +627,79 @@ function saveSave(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE));}cat
 loadSave();
 
 // ════════════════════════════════════════
-//  AUDIO ENGINE
+//  BGM SYSTEM — GitHub mp3s
+// ════════════════════════════════════════
+const BGM_BASE='https://raw.githubusercontent.com/mayankthedev2008/Pixel-Royal/main/';
+const BGM_TRACKS=['BGM1.mp3','BGM2.mp3','BGM3.mp3'];
+let bgmAudio=null,bgmMenuAudio=null,bgmCurrentTrack=-1;
+
+function getRandomTrack(exclude=-1){
+  let idx;
+  do{idx=Math.floor(Math.random()*BGM_TRACKS.length);}
+  while(BGM_TRACKS.length>1&&idx===exclude);
+  return idx;
+}
+
+function startMenuMusic(){
+  stopAllMusic();
+  const idx=getRandomTrack();
+  bgmMenuAudio=new Audio(BGM_BASE+BGM_TRACKS[idx]);
+  bgmMenuAudio.loop=false;
+  bgmMenuAudio.volume=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
+  bgmMenuAudio.play().catch(()=>{});
+  bgmCurrentTrack=idx;
+  // When track ends, play another random one
+  bgmMenuAudio.onended=()=>{
+    if(bgmMenuAudio){
+      const next=getRandomTrack(bgmCurrentTrack);
+      bgmCurrentTrack=next;
+      bgmMenuAudio.src=BGM_BASE+BGM_TRACKS[next];
+      bgmMenuAudio.play().catch(()=>{});
+    }
+  };
+}
+
+function startMusic(){
+  stopAllMusic();
+  const idx=getRandomTrack();
+  bgmAudio=new Audio(BGM_BASE+BGM_TRACKS[idx]);
+  bgmAudio.loop=false;
+  bgmAudio.volume=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
+  bgmAudio.play().catch(()=>{});
+  bgmCurrentTrack=idx;
+  // When track ends, play another random one
+  bgmAudio.onended=()=>{
+    if(bgmAudio){
+      const next=getRandomTrack(bgmCurrentTrack);
+      bgmCurrentTrack=next;
+      bgmAudio.src=BGM_BASE+BGM_TRACKS[next];
+      bgmAudio.play().catch(()=>{});
+    }
+  };
+}
+
+function stopMusic(){
+  if(bgmAudio){bgmAudio.pause();bgmAudio.src='';bgmAudio=null;}
+}
+
+function stopAllMusic(){
+  if(bgmAudio){bgmAudio.pause();bgmAudio.src='';bgmAudio=null;}
+  if(bgmMenuAudio){bgmMenuAudio.pause();bgmMenuAudio.src='';bgmMenuAudio=null;}
+}
+
+function applyMusicVolume(){
+  const vol=SAVE.settings.muted?0:(SAVE.settings.volMaster/100)*(SAVE.settings.volMusic/100);
+  if(bgmAudio)bgmAudio.volume=vol;
+  if(bgmMenuAudio)bgmMenuAudio.volume=vol;
+}
+
+function setMusicIntense(v){} // no-op, kept for compatibility
+
+// ════════════════════════════════════════
+//  AUDIO ENGINE (SFX only)
 // ════════════════════════════════════════
 const AC=(()=>{try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}})();
-let musicNode=null,musicGain=null,bgGain=null,sfxGain=null,masterGain=null;
+let sfxGain=null,masterGain=null,bgGain=null,musicNode=null,musicGain=null;
 
 function initAudioGraph(){
   if(!AC)return;
@@ -645,7 +714,8 @@ function applyVolumes(){
   const m=s.muted?0:s.volMaster/100;
   masterGain.gain.setTargetAtTime(m,AC.currentTime,.05);
   sfxGain.gain.setTargetAtTime(s.volSfx/100,AC.currentTime,.05);
-  bgGain.gain.setTargetAtTime(s.volMusic/100,AC.currentTime,.05);
+  bgGain.gain.setTargetAtTime(0,AC.currentTime,.05);// bgGain unused now
+  applyMusicVolume();
 }
 function beep(f,d,t='square',v=.15,fe,useGain){
   if(!AC)return;
@@ -657,55 +727,24 @@ function beep(f,d,t='square',v=.15,fe,useGain){
     gn.gain.setValueAtTime(v,AC.currentTime);
     gn.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);
     o.start();o.stop(AC.currentTime+d);}catch(e){}}
+
+// SFX — kept for game feel (shoot, hit, kill etc)
 const SFX={
-  shoot:  ()=>beep(265,.065,'sawtooth',.11,52),
-  smg:    ()=>beep(330,.04,'sawtooth',.09,72),
-  snipe:  ()=>beep(165,.12,'sawtooth',.18,36),
+  shoot:  ()=>{},
+  smg:    ()=>{},
+  snipe:  ()=>{},
   hit:    ()=>beep(490,.05,'square',.17,155),
   kill:   ()=>{beep(760,.07,'sine',.2,1200);setTimeout(()=>beep(1000,.12,'sine',.14),60);},
   pickup: ()=>{beep(600,.05,'sine',.12);setTimeout(()=>beep(880,.09,'sine',.1),55);},
   death:  ()=>{beep(290,.04,'square',.22);setTimeout(()=>beep(145,.28,'sawtooth',.17,36),38);},
-  zone:   ()=>beep(215,.07,'sawtooth',.07,105),
-  slowmo: ()=>{beep(200,.5,'sine',.12,180);beep(300,.5,'sine',.08,260);},
+  zone:   ()=>{},
+  slowmo: ()=>{},
   victory:()=>{[0,100,200,300,420].forEach((d,i)=>setTimeout(()=>beep([523,659,784,1047,1319][i],.18,'sine',.22),d));},
   click:  ()=>beep(800,.04,'sine',.1,1000),
   levelup:()=>{beep(880,.1,'sine',.2,1320);setTimeout(()=>beep(1320,.15,'sine',.18,1760),100);},
   coin:   ()=>{beep(1046,.06,'sine',.15,1568);},
   daily:  ()=>{[0,80,160,240].forEach((d,i)=>setTimeout(()=>beep([523,659,784,1047][i],.12,'sine',.18),d));},
 };
-
-// Background music (generative)
-let musicTick=0,musicIntense=false;
-function startMusic(){
-  if(!AC||!bgGain)return;
-  stopMusic();
-  playMusicLayer();
-}
-function stopMusic(){
-  if(musicNode){try{musicNode.stop();}catch(e){}musicNode=null;}
-}
-function playMusicLayer(){
-  if(!AC||!bgGain)return;
-  const scale=musicIntense?[220,277,330,440,554,660]:[196,220,247,294,370,440];
-  const note=scale[Math.floor(Math.random()*scale.length)];
-  const dur=musicIntense?0.18+Math.random()*.1:0.3+Math.random()*.2;
-  const gap=musicIntense?0.12+Math.random()*.15:0.25+Math.random()*.4;
-  try{
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.type=musicIntense?'sawtooth':'triangle';
-    o.frequency.value=note;
-    o.connect(g);g.connect(bgGain);
-    g.gain.setValueAtTime(0,AC.currentTime);
-    g.gain.linearRampToValueAtTime(.35,AC.currentTime+.02);
-    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+dur);
-    o.start();o.stop(AC.currentTime+dur);
-    musicNode=o;
-  }catch(e){}
-  musicTick=setTimeout(playMusicLayer,(dur+gap)*1000);
-}
-function setMusicIntense(v){
-  if(musicIntense!==v){musicIntense=v;}
-}
 
 // ════════════════════════════════════════
 //  SKINS & STORE DATA
@@ -2754,6 +2793,7 @@ function startGame(){
   if(AC&&AC.state==='suspended')AC.resume();
   if(!masterGain)initAudioGraph();
   SFX.click();
+  stopAllMusic();
   document.getElementById('ss').style.display='none';
   document.getElementById('gs').style.display='none';
   document.getElementById('hud').style.display='block';
@@ -2761,17 +2801,20 @@ function startGame(){
   document.getElementById('powerup-bar').style.display='flex';
   if(!MOB&&('ontouchstart' in window||navigator.maxTouchPoints>0))initMob();
   newGame();
+  startMusic();
 }
 function restartGame(){
   SFX.click();
+  stopAllMusic();
   document.getElementById('gs').style.display='none';
   document.getElementById('hud').style.display='block';
   document.getElementById('minimap').style.display='block';
   document.getElementById('powerup-bar').style.display='flex';
   newGame();
+  startMusic();
 }
 function goMenu(){
-  stopMusic();
+  stopAllMusic();
   document.getElementById('gs').style.display='none';
   document.getElementById('ss').style.display='flex';
   document.getElementById('hud').style.display='none';
@@ -2780,6 +2823,7 @@ function goMenu(){
   document.getElementById('powerup-bar').style.display='none';
   G={over:1};resetFX();PAUSED=false;
   updateSSCoins();
+  startMenuMusic();
 }
 document.getElementById('pb').addEventListener('click',startGame);
 document.getElementById('rb').addEventListener('click',restartGame);
@@ -3017,13 +3061,21 @@ const isTouch='ontouchstart' in window || navigator.maxTouchPoints > 0;
 if(isTouch){
   const ct = document.getElementById('controls-tab');
   if(ct) ct.style.display = 'none';
-  // Show joystick size row on mobile (it's inside tab-controls, open that tab by default on mobile)
   const jr = document.getElementById('joy-size-row');
   if(jr) jr.style.removeProperty('display');
 } else {
   const jr = document.getElementById('joy-size-row');
   if(jr) jr.style.display = 'none';
 }
+// Start menu music on first user interaction
+document.addEventListener('click',function startMenuOnce(){
+  startMenuMusic();
+  document.removeEventListener('click',startMenuOnce);
+},{once:true});
+document.addEventListener('touchstart',function startMenuOnceTouch(){
+  startMenuMusic();
+  document.removeEventListener('touchstart',startMenuOnceTouch);
+},{once:true});
 requestAnimationFrame(mainLoop);
 </script>
 </body>
