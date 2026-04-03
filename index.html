@@ -274,16 +274,92 @@ select.sselect{display:none}/* hidden — replaced by custom pills */
 
 /* Animations */
 @keyframes tp{0%,100%{opacity:1}50%{opacity:.72}}
-@keyframes bp{0%,100%{box-shadow:0 0 20px rgba(240,224,64,.3),0 4px 0 #7a6000}50%{box-shadow:0 0 50px rgba(240,224,64,.65),0 4px 0 #7a6000}}
+@keyframes bp{0%,100%{box-shadow:0 0 16px rgba(240,224,64,.3),0 3px 0 #7a6000}50%{box-shadow:0 0 40px rgba(240,224,64,.65),0 3px 0 #7a6000}}
 @keyframes bs{0%{left:-100%}60%,100%{left:150%}}
-@keyframes ca{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}40%{transform:translate(-50%,-50%) scale(1.2);opacity:1}70%{transform:translate(-50%,-50%) scale(.95)}100%{transform:translate(-50%,-50%) scale(1)}}
-@keyframes sbIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes modalIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes ca{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}40%{transform:translate(-50%,-50%) scale(1.25);opacity:1}70%{transform:translate(-50%,-50%) scale(.95)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes sbIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes modalIn{from{opacity:0;transform:scale(.88) translateY(22px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes ripple{to{transform:scale(18);opacity:0}}
-@keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-50px)}}
+@keyframes floatUp{0%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-55px)}}
 @keyframes bossEntrance{0%{transform:translateX(-50%) scale(0) rotate(-180deg);opacity:0}60%{transform:translateX(-50%) scale(1.2) rotate(5deg);opacity:1}100%{transform:translateX(-50%) scale(1) rotate(0deg);opacity:1}}
 @keyframes nukeWarning{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.4;transform:translateX(-50%) scale(1.08)}}
 @keyframes laserPulse{0%,100%{box-shadow:0 0 20px rgba(255,50,50,.8)}50%{box-shadow:0 0 50px rgba(255,50,50,1),0 0 80px rgba(255,100,0,.6)}}
+@keyframes screenFadeIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes screenFadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
+@keyframes hudSlideDown{from{opacity:0;transform:translateY(-22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes hudSlideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes hudPop{0%{transform:scale(0.5);opacity:0}65%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes pillPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes wboxSlide{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes xpSlide{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes gameOverDrop{0%{opacity:0;transform:translateY(-50px) scale(.8)}65%{transform:translateY(8px) scale(1.04)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes menuBtnFadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes titleGlow{0%,100%{text-shadow:0 0 10px #f0e040,0 0 30px #f0c000,0 0 70px #f08000,3px 3px 0 #7a6000}50%{text-shadow:0 0 20px #f0e040,0 0 60px #f0c000,0 0 120px #f08000,3px 3px 0 #7a6000}}
+@keyframes coinPop{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes xpFill{from{filter:brightness(1.8)}to{filter:brightness(1)}}
+@keyframes damageVignette{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@keyframes levelUpBounce{0%{opacity:0;transform:translateX(-50%) scale(.5) translateY(10px)}50%{transform:translateX(-50%) scale(1.12) translateY(-4px)}100%{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}}
+@keyframes puReadyPop{0%{transform:scale(.8);opacity:.5}60%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
+
+/* Screen enter animation */
+.screen-enter{animation:screenFadeIn .38s cubic-bezier(.22,.68,.36,1.15) both}
+.screen-exit{animation:screenFadeOut .22s ease forwards}
+
+/* HUD animations */
+#hud-top{animation:hudSlideDown .45s cubic-bezier(.22,.68,.36,1.2) both}
+#hp-center{animation:hudSlideUp .45s .12s cubic-bezier(.22,.68,.36,1.2) both}
+#hud-btm{animation:hudSlideUp .45s .18s cubic-bezier(.22,.68,.36,1.2) both}
+#powerup-bar{animation:hudPop .5s .22s cubic-bezier(.22,.68,.36,1.3) both}
+#minimap{animation:hudPop .45s .06s ease both}
+#wbox{animation:wboxSlide .4s .22s ease both;transition:transform .15s,box-shadow .25s}
+
+/* Game over title */
+.got{animation:gameOverDrop .55s cubic-bezier(.22,.68,.36,1.2) both,tp 2s 0.6s infinite!important}
+
+/* Menu buttons stagger */
+.game-title{animation:titleGlow 3s ease-in-out infinite}
+.menu-btns .btn:nth-child(1){animation:menuBtnFadeIn .42s .08s both,bp 2s ease-in-out infinite}
+.menu-btns .menu-grid .btn-sec:nth-child(1){animation:menuBtnFadeIn .42s .18s both}
+.menu-btns .menu-grid .btn-sec:nth-child(2){animation:menuBtnFadeIn .42s .26s both}
+.menu-btns>.btn-sec:last-child{animation:menuBtnFadeIn .42s .34s both}
+
+/* Smooth hpill value change */
+.hpill .v{transition:transform .15s,color .25s}
+.hpill .v.bump{animation:pillPulse .22s ease}
+
+/* Weapon box */
+#wbox.pickup{box-shadow:0 0 28px rgba(240,200,64,.8)!important;transform:scale(1.06)!important}
+
+/* Power-up slot */
+.pu-slot{transition:all .2s cubic-bezier(.22,.68,.36,1.4)}
+.pu-slot.ready{animation:puReadyPop .35s cubic-bezier(.22,.68,.36,1.4) both}
+
+/* HP bar smooth */
+#hp-bar{transition:width .14s cubic-bezier(.4,0,.2,1),background .3s ease}
+
+/* XP bar smooth */
+#xp-bar{transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* Modal smooth */
+.modal-box{animation:modalIn .3s cubic-bezier(.17,.67,.3,1.28) both}
+
+/* Level up toast */
+#lvlup-toast{transition:opacity .25s}
+#lvlup-toast .lt{animation:levelUpBounce .5s cubic-bezier(.22,.68,.36,1.3) both}
+
+/* Joystick smooth */
+#jb,#rjb{transition:opacity .2s,box-shadow .15s}
+#jt,#rjt{transition:box-shadow .15s}
+#jb:active,#rjb:active{opacity:.8}
+
+/* Coin toast */
+#coin-toast{transition:opacity .18s;font-weight:bold}
+
+/* ss-footer smooth */
+.ss-footer{transition:opacity .3s}
+
+/* Kill notify already has animation, add glow on border */
+.kill-notify{box-shadow:0 0 12px rgba(255,60,60,.18)}
 /* Power-up HUD bar */
 #powerup-bar{position:fixed;bottom:max(46px,calc(env(safe-area-inset-bottom) + 34px));left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:22;pointer-events:all}
 .pu-slot{width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;position:relative;transition:all .15s;backdrop-filter:blur(6px)}
@@ -2248,19 +2324,28 @@ function drawParts(){
 // ════════════════════════════════════════
 //  HUD
 // ════════════════════════════════════════
+let _prevKills=0,_prevCoins=0,_prevAlive=11;
+function bumpEl(el){
+  el.classList.remove('bump');void el.offsetWidth;
+  el.classList.add('bump');
+  setTimeout(()=>el.classList.remove('bump'),200);
+}
 function updHUD(){
   if(!G.pl)return;
   const p=G.pl,rem=Math.max(0,DUR-G.el);
   const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
   document.getElementById('tm').textContent=`${mm}:${ss.toString().padStart(2,'0')}`;
-  document.getElementById('al').textContent=G.bots.filter(b=>!b.dead).length+(p.dead?0:1);
-  const kEl=document.getElementById('kl');kEl.textContent=G.kills;
-  document.getElementById('hud-coins').textContent=SAVE.coins;
+  const alive=G.bots.filter(b=>!b.dead).length+(p.dead?0:1);
+  const alEl=document.getElementById('al');
+  if(alive!==_prevAlive){alEl.textContent=alive;bumpEl(alEl);_prevAlive=alive;}
+  const kEl=document.getElementById('kl');
+  if(G.kills!==_prevKills){kEl.textContent=G.kills;bumpEl(kEl);_prevKills=G.kills;}
+  const cEl=document.getElementById('hud-coins');
+  if(SAVE.coins!==_prevCoins){cEl.textContent=SAVE.coins;bumpEl(cEl);_prevCoins=SAVE.coins;}
   const hp=p.hp/p.mhp*100,bar=document.getElementById('hp-bar');
   bar.style.width=hp+'%';
   bar.style.background=hp>60?'linear-gradient(90deg,#22ee44,#88ff88)':hp>30?'linear-gradient(90deg,#ffcc00,#ffee88)':'linear-gradient(90deg,#ff4444,#ff8888)';
   document.getElementById('hp-n').textContent=Math.ceil(p.hp)+' HP';
-  // Regen indicator
   const regenEl=document.getElementById('hp-regen');
   regenEl.textContent='▲ REGENERATING';
   regenEl.style.opacity=(G.regenVis&&p.hp<p.mhp)?'1':'0';
@@ -2380,10 +2465,18 @@ function endGame(win){
     `<div class="sb"><div class="sv">${G.bestCombo}x</div><div class="sk">Best Combo</div></div>`;
   document.getElementById('go-reward').textContent=`+${totalCoins} 🪙  ·  +${totalXP} XP${win?' · 🏆 WIN BONUS':''}`;
   document.getElementById('vcanvas').style.display='none';
-  document.getElementById('gs').style.display='flex';
   document.getElementById('hud').style.display='none';
   document.getElementById('minimap').style.display='none';
   document.getElementById('powerup-bar').style.display='none';
+  // Smooth game over entrance
+  setTimeout(()=>{
+    const gs=document.getElementById('gs');
+    gs.style.opacity='0';gs.style.display='flex';
+    gs.style.transition='opacity .4s ease';
+    void gs.offsetWidth;
+    gs.style.opacity='1';
+    setTimeout(()=>gs.style.transition='',400);
+  },300);
   updateSSCoins();saveSave();
 }
 
@@ -2827,41 +2920,61 @@ function updateSSCoins(){
   document.getElementById('ss-coins').textContent=SAVE.coins;
   document.getElementById('ss-lvl').textContent=SAVE.level;
 }
+// ── Smooth screen transition helper ──
+function fadeTransition(outEl, inFn, dur=220){
+  if(outEl){
+    outEl.style.animation='screenFadeOut .22s ease forwards';
+    setTimeout(()=>{outEl.style.display='none';outEl.style.animation='';inFn();},dur);
+  } else inFn();
+}
+
 function startGame(){
   if(AC&&AC.state==='suspended')AC.resume();
   if(!masterGain)initAudioGraph();
   SFX.click();
   stopAllMusic();
-  document.getElementById('ss').style.display='none';
-  document.getElementById('gs').style.display='none';
-  document.getElementById('hud').style.display='block';
-  document.getElementById('minimap').style.display='block';
-  document.getElementById('powerup-bar').style.display='flex';
-  if(!MOB&&('ontouchstart' in window||navigator.maxTouchPoints>0))initMob();
-  newGame();
-  startMusic();
+  const ss=document.getElementById('ss');
+  fadeTransition(ss,()=>{
+    document.getElementById('gs').style.display='none';
+    const hud=document.getElementById('hud');
+    hud.style.display='block';
+    hud.style.animation='none';void hud.offsetWidth;
+    document.getElementById('minimap').style.display='block';
+    document.getElementById('powerup-bar').style.display='flex';
+    if(!MOB&&('ontouchstart' in window||navigator.maxTouchPoints>0))initMob();
+    newGame();
+    startMusic();
+  });
 }
 function restartGame(){
   SFX.click();
   stopAllMusic();
-  document.getElementById('gs').style.display='none';
-  document.getElementById('hud').style.display='block';
-  document.getElementById('minimap').style.display='block';
-  document.getElementById('powerup-bar').style.display='flex';
-  newGame();
-  startMusic();
+  const gs=document.getElementById('gs');
+  fadeTransition(gs,()=>{
+    const hud=document.getElementById('hud');
+    hud.style.display='block';
+    document.getElementById('minimap').style.display='block';
+    document.getElementById('powerup-bar').style.display='flex';
+    newGame();
+    startMusic();
+  });
 }
 function goMenu(){
   stopAllMusic();
-  document.getElementById('gs').style.display='none';
-  document.getElementById('ss').style.display='flex';
-  document.getElementById('hud').style.display='none';
-  document.getElementById('minimap').style.display='none';
-  document.getElementById('vcanvas').style.display='none';
-  document.getElementById('powerup-bar').style.display='none';
-  G={over:1};resetFX();PAUSED=false;
-  updateSSCoins();
-  startMenuMusic();
+  const gs=document.getElementById('gs');
+  fadeTransition(gs,()=>{
+    const ss=document.getElementById('ss');
+    ss.style.display='flex';
+    ss.classList.remove('screen-enter');void ss.offsetWidth;
+    ss.classList.add('screen-enter');
+    document.getElementById('hud').style.display='none';
+    document.getElementById('minimap').style.display='none';
+    document.getElementById('vcanvas').style.display='none';
+    document.getElementById('powerup-bar').style.display='none';
+    G={over:1};resetFX();PAUSED=false;
+    updateSSCoins();
+    startMenuMusic();
+  });
 }
 // Music player controls (home screen)
 document.getElementById('music-prev').addEventListener('click',()=>{
